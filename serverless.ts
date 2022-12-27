@@ -41,6 +41,16 @@ const serverlessConfiguration: AWS = {
       concurrency: 10,
     },
   },
+  resources: {
+    Resources: {
+      DiscordCommandsResource: {
+        Type : "AWS::CloudFormation::CustomResource",
+        Properties : {
+          ServiceToken : { 'Fn::GetAtt': ['RegisterDiscordCommandsLambdaFunction', 'Arn' ] },
+        },
+      },
+    }
+  }
 };
 
 module.exports = serverlessConfiguration;
