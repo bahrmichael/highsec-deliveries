@@ -8,6 +8,7 @@ const serverlessConfiguration: AWS = {
   plugins: ['serverless-esbuild', 'serverless-iam-roles-per-function', 'serverless-plugin-log-retention'],
   provider: {
     name: 'aws',
+    stage: '${opt:stage, "dev"}',
     runtime: 'nodejs16.x',
     apiGateway: {
       minimumCompressionSize: 1024,
