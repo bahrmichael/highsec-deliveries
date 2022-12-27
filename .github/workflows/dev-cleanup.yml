@@ -1,0 +1,26 @@
+name: Remove Backend Dev
+
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  id-token: write # This is required for requesting the JWT
+  contents: read  # This is required for actions/checkout
+
+env:
+  # PR number
+  VERSION: pr-${{ github.event.number }}
+
+jobs:
+  remove:
+    runs-on: ubuntu-latest
+    concurrency: ci-${{ github.ref }}
+
+    steps:
+      - uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b # v3
+      - name: 'Removing backend stage: ${{ env.VERSION }}'
+        uses: './.github/actions/sls-remove'
+        with:
+          stage: ${{ env.VERSION }}
+          aws-account-id: ${{ secrets.DEV_AWS_ACCOUNT_ID }}

@@ -1,0 +1,40 @@
+name: Deploy Backend Manually
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version'
+        required: true
+        type: string
+      ref:
+        description: 'The branch, tag or SHA to checkout'
+        required: false
+        type: string
+      aws-account-id:
+        description: 'The AWS account id'
+        required: true
+        type: string
+
+permissions:
+  id-token: write # This is required for requesting the JWT
+  contents: read  # This is required for actions/checkout
+
+env:
+  VERSION: ${{ inputs.version }}
+
+jobs:
+
+  deploy:
+    runs-on: ubuntu-latest
+    concurrency: main
+
+    steps:
+      - uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b # v3
+        with:
+          ref: ${{ inputs.ref }}
+      - name: 'Deploying backend to stage: ${{ env.VERSION }}'
+        uses: './.github/actions/sls-deploy'
+        with:
+          stage: ${{ env.VERSION }}
+          aws-account-id: ${{ inputs.aws-account-id }}
