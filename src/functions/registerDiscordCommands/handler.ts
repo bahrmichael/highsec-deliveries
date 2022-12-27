@@ -27,7 +27,7 @@ async function writeCommands() {
 
   const client = await getClient();
 
-  const commands = {
+  const commands = [{
     "name": "blep",
     "type": 1,
     "description": "Send a random adorable animal photo",
@@ -59,7 +59,7 @@ async function writeCommands() {
         "required": false
       }
     ]
-  }
+  }]
 
   await client.put(`/applications/${APPLICATION_ID}/commands`, commands);
 }
