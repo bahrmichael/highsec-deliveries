@@ -10,7 +10,7 @@ permissions:
   contents: read  # This is required for actions/checkout
 
 env:
-  VERSION: 20221023
+  VERSION: 20221227
 
 jobs:
 

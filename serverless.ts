@@ -17,6 +17,14 @@ const serverlessConfiguration: AWS = {
       AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1',
       NODE_OPTIONS: '--enable-source-maps --stack-trace-limit=1000',
     },
+    stackTags: {
+      projectGroup: 'highsec-deliveries',
+      project: '${self:service}',
+      stage: '${self:provider.stage}',
+    },
+    iam: {
+      deploymentRole: 'arn:aws:iam::${aws:accountId}:role/${self:service}-CloudFormationExecutionRole'
+    },
   },
   functions,
   package: { individually: true },
