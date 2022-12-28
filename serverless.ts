@@ -44,6 +44,47 @@ const serverlessConfiguration: AWS = {
   },
   resources: {
     Resources: {
+      UsersTable: {
+        Type: 'AWS::DynamoDB::Table',
+        Properties: {
+          BillingMode: 'PAY_PER_REQUEST',
+          KeySchema: [{
+            AttributeName: 'pk',
+            KeyType: 'HASH'
+          }, {
+            AttributeName: 'sk',
+            KeyType: 'RANGE'
+          }],
+          AttributeDefinitions: [{
+            AttributeName: 'pk',
+            AttributeType: 'S',
+          }, {
+            AttributeName: 'sk',
+            AttributeType: 'S',
+          }],
+        }
+      },
+      LoginStateTable: {
+        Type: 'AWS::DynamoDB::Table',
+        Properties: {
+          BillingMode: 'PAY_PER_REQUEST',
+          KeySchema: [{
+            AttributeName: 'state',
+            KeyType: 'HASH'
+          }],
+          AttributeDefinitions: [{
+            AttributeName: 'state',
+            AttributeType: 'S',
+          }, {
+            AttributeName: 'timetolive',
+            AttributeType: 'N',
+          }],
+          TimeToLiveSpecification: {
+            Enabled: true,
+            AttributeName: 'timetolive'
+          }
+        }
+      },
       DiscordCommandsResource: {
         Type : "AWS::CloudFormation::CustomResource",
         Properties : {

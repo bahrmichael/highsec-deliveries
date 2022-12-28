@@ -1,8 +1,11 @@
 import {formatJSONResponse} from '@libs/api-gateway';
 import {middyfy} from '@libs/lambda';
 import {verifyKey, InteractionType, InteractionResponseType} from 'discord-interactions';
+import {ulid} from "ulid";
+import {ddb} from "@libs/ddb-client";
+import { PutCommand } from '@aws-sdk/lib-dynamodb';
 
-const {PUBLIC_KEY} = process.env;
+const {PUBLIC_KEY, LOGIN_STATE_TABLE} = process.env;
 
 function isVerified(headers: any, body: string | null): boolean {
 
@@ -56,7 +59,24 @@ const handler = async (event: any) => {
     console.log({options});
 
     if (command === 'signin') {
-      // todo: generate state
+      const state = ulid();
+
+      const discordId = data.member.user.id;
+
+      await ddb.send(new PutCommand({
+        TableName: LOGIN_STATE_TABLE,
+        Item: {
+          state,
+          interactionId,
+          discordId,
+          // one hour time to live
+          timetolive: Math.ceil(new Date().getTime() / 1_000 + 60 * 60)
+        }
+      }))
+
+      const callbackUrl = `https://6qhjjllnai.execute-api.us-east-1.amazonaws.com/20221227/sso-callback`;
+      const signinUrl = `https://login.eveonline.com/v2/oauth/authorize/?response_type=code&redirect_uri=${callbackUrl}}&client_id=abce3c6539794647a0a31aa4492a7cb4&state=${state}`
+
       return formatJSONResponse({
         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
         data: {
@@ -71,7 +91,7 @@ const handler = async (event: any) => {
                   type: 2,
                   label: "Sign in with EVE Online",
                   style: 5,
-                  url: "https://test.com"
+                  url: signinUrl
                 },
               ]
             }
@@ -79,7 +99,6 @@ const handler = async (event: any) => {
         }
       })
     } else if (command === 'order') {
-      // todo: generate state
       return formatJSONResponse({
         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
         data: {
@@ -127,6 +146,7 @@ const handler = async (event: any) => {
     const {custom_id: customId} = interactionData;
 
     if (customId === 'confirm_order') {
+      // todo: remove the previous message, or disable its buttons
       return formatJSONResponse({
         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
         data: {
@@ -136,6 +156,7 @@ const handler = async (event: any) => {
         }
       })
     } else if (customId === 'cancel_order') {
+      // todo: remove the previous message, or disable its buttons
       return formatJSONResponse({
         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
         data: {

@@ -10,11 +10,14 @@
     "node": ">=14.15.0"
   },
   "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.238.0",
     "@aws-sdk/client-secrets-manager": "^3.238.0",
+    "@aws-sdk/lib-dynamodb": "^3.238.0",
     "@middy/core": "^3.4.0",
     "@middy/http-json-body-parser": "^3.4.0",
     "axios": "^1.2.1",
-    "discord-interactions": "^3.2.0"
+    "discord-interactions": "^3.2.0",
+    "ulid": "^2.3.0"
   },
   "devDependencies": {
     "@serverless/typescript": "^3.0.0",
