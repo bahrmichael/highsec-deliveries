@@ -116,7 +116,10 @@ const handler = async (event: any) => {
                             max_length: 35,
                             placeholder: "https://janice.e-351.com/a/eN8Fqp",
                             required: true
-                        }, {
+                        }]
+                    }, {
+                        type: 1,
+                        components: [{
                             type: 4,
                             custom_id: "destination",
                             label: "Destination",
@@ -125,8 +128,7 @@ const handler = async (event: any) => {
                             max_length: 300,
                             placeholder: "Gamis X - Ammatar Fleet Logistics Support",
                             required: true
-                        }
-                        ]
+                        }]
                     }]
                     // {
                     //   type: 1,
