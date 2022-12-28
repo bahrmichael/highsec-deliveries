@@ -320,7 +320,7 @@ const handler = async (event: any) => {
                 const discordId = data.member.user.id;
                 const balanceRecord = (await ddb.send(new GetCommand({
                     TableName: USERS_TABLE,
-                    Key: {pk: `discord#${discordId}`, sk: 'balanace'}
+                    Key: {pk: `discord#${discordId}`, sk: 'balance'}
                 }))).Item;
 
                 if (!(balanceRecord?.available > 0)) {
