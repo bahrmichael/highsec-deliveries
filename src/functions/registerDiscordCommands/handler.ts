@@ -10,7 +10,7 @@ async function getClient() {
     baseURL: `https://discord.com/api/v10`,
     headers: {
       Authorization: `Bot ${await getSecret()}`,
-      'Accept-Encoding': '*'
+      'Accept-Encoding': 'gzip,deflate,compress'
     }
   })
 }
