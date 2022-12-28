@@ -103,30 +103,29 @@ const handler = async (event: any) => {
             return formatJSONResponse({
                 type: InteractionResponseType.APPLICATION_MODAL,
                 data: {
-                    title: "My Cool Modal",
-                    "custom_id": "cool_modal",
-                    "components": [{
-                        "type": 1,
-                        "components": [{
-                            "type": 4,
-                            "custom_id": "appraisal_link",
-                            "label": "Appraisal Link",
-                            "style": 1,
-                            "min_length": 28,
-                            "max_length": 35,
-                            "placeholder": "https://janice.e-351.com/a/eN8Fqp",
-                            "required": true
+                    title: "Place an Order",
+                    custom_id: "order_modal",
+                    components: [{
+                        type: 1,
+                        components: [{
+                            type: 4,
+                            custom_id: "appraisal_link",
+                            label: "Appraisal Link",
+                            style: 1,
+                            min_length: 28,
+                            max_length: 35,
+                            placeholder: "https://janice.e-351.com/a/eN8Fqp",
+                            required: true
+                        }, {
+                            type: 4,
+                            custom_id: "destination",
+                            label: "Destination",
+                            style: 1,
+                            min_length: 10,
+                            max_length: 300,
+                            placeholder: "Gamis X - Ammatar Fleet Logistics Support",
+                            required: true
                         }
-                            // , {
-                            //   "type": 4,
-                            //   "custom_id": "destination",
-                            //   "label": "Destination",
-                            //   "style": 1,
-                            //   "min_length": 10,
-                            //   "max_length": 300,
-                            //   "placeholder": "Gamis X - Ammatar Fleet Logistics Support",
-                            //   "required": true
-                            // }
                         ]
                     }]
                     // {
@@ -217,6 +216,15 @@ const handler = async (event: any) => {
                 type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
                 data: {
                     content: `Your order has been cancelled.`,
+                    // Make the response visible to only the user running the command
+                    flags: 64,
+                }
+            })
+        } else if (customId === 'order_modal') {
+            return formatJSONResponse({
+                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                data: {
+                    content: `WIP: ${JSON.stringify(interactionData)}`,
                     // Make the response visible to only the user running the command
                     flags: 64,
                 }
