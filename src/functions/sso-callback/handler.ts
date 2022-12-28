@@ -63,6 +63,7 @@ const hello = async (event: APIGatewayProxyEvent) => {
     TableName: USERS_TABLE,
     Item: {
       pk: `eve#${data.characterId}`,
+      sk: 'discord',
       characterName: data.characterName,
       discordId,
     }
