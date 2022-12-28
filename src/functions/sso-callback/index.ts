@@ -29,6 +29,6 @@ export default {
   }, {
     Effect: 'Allow',
     Action: ['secretsmanager:GetSecretValue'],
-    Resource: ['arn:aws:secretsmanager:${aws:region}:${aws:accountId}:secret:highsec_deliveries_discord_bot_secret-MTKpcQ'],
+    Resource: ['arn:aws:secretsmanager:${aws:region}:${aws:accountId}:secret:highsec_deliveries-Fyg6NK'],
   }],
 };

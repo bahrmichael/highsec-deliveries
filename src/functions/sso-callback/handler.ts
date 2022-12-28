@@ -12,8 +12,8 @@ const {LOGIN_STATE_TABLE, USERS_TABLE, GUILD_ID, VERIFIED_ROLE_ID, APPLICATION_I
 const AUTH_API = `https://uc4v3lk6rh.execute-api.us-east-1.amazonaws.com/dev/auth`;
 
 async function getSecret() {
-    const secretResponse = await ssm.send(new GetSecretValueCommand({SecretId: 'highsec_deliveries_discord_bot_secret'}))
-    return secretResponse.SecretString
+    const secretResponse = await ssm.send(new GetSecretValueCommand({SecretId: 'highsec_deliveries'}))
+    return JSON.parse(secretResponse.SecretString).discord_bot_secret;
 }
 
 async function getClient() {

@@ -12,8 +12,8 @@ const ssm = new SecretsManagerClient({});
 const {PUBLIC_KEY, LOGIN_STATE_TABLE, USERS_TABLE} = process.env;
 
 async function getJaniceSecret(): Promise<string> {
-    const secretResponse = await ssm.send(new GetSecretValueCommand({SecretId: 'highsec_deliveries_janice_key'}))
-    return secretResponse.SecretString
+    const secretResponse = await ssm.send(new GetSecretValueCommand({SecretId: 'highsec_deliveries'}))
+    return JSON.parse(secretResponse.SecretString).janice_key;
 }
 
 async function getJaniceClient() {

@@ -27,7 +27,7 @@ export default {
   }, {
     Effect: 'Allow',
     Action: ['secretsmanager:GetSecretValue'],
-    Resource: ['arn:aws:secretsmanager:${aws:region}:${aws:accountId}:secret:highsec_deliveries_janice_key-1C0mvC'],
+    Resource: ['arn:aws:secretsmanager:${aws:region}:${aws:accountId}:secret:highsec_deliveries-Fyg6NK'],
   }],
   tags: {
     function: 'interactions'

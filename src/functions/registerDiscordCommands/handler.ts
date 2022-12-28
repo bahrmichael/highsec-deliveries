@@ -16,8 +16,8 @@ async function getClient() {
 }
 
 async function getSecret() {
-  const secretResponse = await ssm.send(new GetSecretValueCommand({SecretId: 'highsec_deliveries_discord_bot_secret'}))
-  return secretResponse.SecretString
+  const secretResponse = await ssm.send(new GetSecretValueCommand({SecretId: 'highsec_deliveries'}))
+  return JSON.parse(secretResponse.SecretString).discord_bot_secret;
 }
 
 async function writeCommands(applicationId: string) {
