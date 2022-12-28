@@ -47,7 +47,7 @@ const hello = async (event: APIGatewayProxyEvent) => {
         }
     }
 
-    const {discordId, interactionId, interactionToken} = loginState;
+    const {discordId, interactionToken} = loginState;
 
     const {data} = await axios.get(`${AUTH_API}?code=${event.queryStringParameters.code}&appId=highsec-deliveries`);
 
@@ -71,8 +71,6 @@ const hello = async (event: APIGatewayProxyEvent) => {
 
     const discordClient = await getClient();
     await discordClient.put(`/guilds/${GUILD_ID}/members/${discordId}/roles/${VERIFIED_ROLE_ID}`)
-
-    console.log({interactionId, interactionToken})
 
     await discordClient.delete(`/webhooks/${APPLICATION_ID}/${interactionToken}/messages/@original`)
     await discordClient.post(`/webhooks/${APPLICATION_ID}/${interactionToken}`, {
