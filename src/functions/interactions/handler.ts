@@ -323,7 +323,7 @@ const handler = async (event: any) => {
                     Key: {pk: `discord#${discordId}`, sk: 'balanace'}
                 }))).Item;
 
-                if (balanceRecord?.available > 0) {
+                if (!(balanceRecord?.available > 0)) {
                     throw Error(`Insufficient balance. Please link EVE characters with \`/signin\` and then transfer ISK from them to \`Highsec Deliveries\` to top up your balance. It may take up to 60 minutes for the balance to update. You can use \`/balance\` to check your current balance.`)
                 }
 
