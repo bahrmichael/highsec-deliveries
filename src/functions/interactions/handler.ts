@@ -4,8 +4,17 @@ import {verifyKey, InteractionType, InteractionResponseType} from 'discord-inter
 import {ulid} from "ulid";
 import {ddb} from "@libs/ddb-client";
 import {PutCommand, QueryCommand} from '@aws-sdk/lib-dynamodb';
+import axios from "axios";
+import {GetSecretValueCommand, SecretsManagerClient} from "@aws-sdk/client-secrets-manager";
+
+const ssm = new SecretsManagerClient({});
 
 const {PUBLIC_KEY, LOGIN_STATE_TABLE, USERS_TABLE} = process.env;
+
+async function getJaniceSecret(): Promise<string> {
+    const secretResponse = await ssm.send(new GetSecretValueCommand({SecretId: 'highsec_deliveries_discord_bot_secret'}))
+    return secretResponse.SecretString
+}
 
 function isVerified(headers: any, body: string | null): boolean {
 
@@ -126,7 +135,7 @@ const handler = async (event: any) => {
                             style: 1,
                             min_length: 10,
                             max_length: 300,
-                            placeholder: "Gamis X - Ammatar Fleet Logistics Support",
+                            placeholder: "Jita IV - Moon 4 - Caldari Navy Assembly Plant",
                             required: true
                         }]
                     }]
@@ -243,10 +252,69 @@ const handler = async (event: any) => {
         const {custom_id: customId} = interactionData;
 
         if (customId === 'order_modal') {
+            const janiceLink = interactionData.components.find((c) => c.components[0]?.custom_id === 'appraisal_link')?.value;
+            const appraisalCode = extractId(janiceLink);
+            if (!appraisalCode) {
+                return formatJSONResponse({
+                    type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                    data: {
+                        content: `The appraisal link \`${janiceLink}\`is invalid.`,
+                        // Make the response visible to only the user running the command
+                        flags: 64,
+                    }
+                })
+            }
+
+            let janiceResult;
+            try {
+                janiceResult = (await axios.get(`https://janice.e-351.com/api/rest/v2/appraisal/${appraisalCode}`, {
+                    headers: {
+                        'X-ApiKey': await getJaniceSecret()
+                    }
+                })).data;
+            } catch (e) {
+                console.error(e);
+                return formatJSONResponse({
+                    type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                    data: {
+                        content: `Failed to check the appraisal. Please try again.`,
+                        // Make the response visible to only the user running the command
+                        flags: 64,
+                    }
+                })
+            }
+
+            const destinationValue = interactionData.components.find((c) => c.components[0]?.custom_id === 'destination')?.value;
+            let destination;
+            try {
+                const destinationResult = (await axios.post(`https://esi.evetech.net/v1/universe/ids/?datasource=tranquility`, [destinationValue])).data;
+                if (destinationResult.stations?.length === 0) {
+                    return formatJSONResponse({
+                        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                        data: {
+                            content: `The name doesn't seem to match any station. Are you sure there's no typo and it's an exact match?`,
+                            // Make the response visible to only the user running the command
+                            flags: 64,
+                        }
+                    })
+                }
+                destination = destinationResult.stations[0]?.name;
+            } catch (e) {
+                console.error(e);
+                return formatJSONResponse({
+                    type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                    data: {
+                        content: `Failed to check the destination. Please try again.`,
+                        // Make the response visible to only the user running the command
+                        flags: 64,
+                    }
+                })
+            }
+
             return formatJSONResponse({
                 type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
                 data: {
-                    content: `WIP: ${JSON.stringify(interactionData)}`,
+                    content: `WIP: ${JSON.stringify({destination, appraisalCode, sellValue: janiceResult.immediatePrices.totalSellPrice})}`,
                     // Make the response visible to only the user running the command
                     flags: 64,
                 }
@@ -272,5 +340,17 @@ const handler = async (event: any) => {
         })
     }
 };
+
+function extractId(url: string | undefined): string | null {
+    if (!url) {
+        return null;
+    }
+    const regex = /a\/([^/]*)/;
+    const match = regex.exec(url);
+    if (match) {
+        return match[1];
+    }
+    return null;
+}
 
 export const main = middyfy(handler);
