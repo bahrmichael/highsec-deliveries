@@ -101,29 +101,55 @@ const handler = async (event: any) => {
       })
     } else if (command === 'order') {
       return formatJSONResponse({
-        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+        type: InteractionResponseType.APPLICATION_MODAL,
         data: {
           content: `TODO`,
           // Make the response visible to only the user running the command
           flags: 64,
           components: [
             {
-              type: 1,
-              components: [
-                {
-                  type: 2,
-                  label: "Confirm",
-                  style: 3,
-                  custom_id: "confirm_order"
-                },
-                {
-                  type: 2,
-                  label: "Cancel",
-                  style: 4,
-                  custom_id: "cancel_order"
-                }
-              ]
-            }
+              title: "My Cool Modal",
+              "custom_id": "cool_modal",
+              "components": [{
+                "type": 1,
+                "components": [{
+                  "type": 4,
+                  "custom_id": "appraisal_link",
+                  "label": "Appraisal Link",
+                  "style": 1,
+                  "min_length": 28,
+                  "max_length": 35,
+                  "placeholder": "https://janice.e-351.com/a/eN8Fqp",
+                  "required": true
+                }, {
+                  "type": 4,
+                  "custom_id": "destination",
+                  "label": "Destination",
+                  "style": 1,
+                  "min_length": 10,
+                  "max_length": 300,
+                  "placeholder": "Gamis X - Ammatar Fleet Logistics Support",
+                  "required": true
+                }]
+              }]
+            },
+            // {
+            //   type: 1,
+            //   components: [
+            //     {
+            //       type: 2,
+            //       label: "Confirm",
+            //       style: 3,
+            //       custom_id: "confirm_order"
+            //     },
+            //     {
+            //       type: 2,
+            //       label: "Cancel",
+            //       style: 4,
+            //       custom_id: "cancel_order"
+            //     }
+            //   ]
+            // }
           ]
         }
       })
