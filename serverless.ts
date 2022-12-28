@@ -75,9 +75,6 @@ const serverlessConfiguration: AWS = {
           AttributeDefinitions: [{
             AttributeName: 'state',
             AttributeType: 'S',
-          }, {
-            AttributeName: 'timetolive',
-            AttributeType: 'N',
           }],
           TimeToLiveSpecification: {
             Enabled: true,
