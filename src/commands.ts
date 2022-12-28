@@ -6,4 +6,8 @@ export const commands = [{
     "name": "order",
     "type": 1,
     "description": "Place an order",
+}, {
+    "name": "test",
+    "type": 1,
+    "description": "test"
 }]
