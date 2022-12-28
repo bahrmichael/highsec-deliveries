@@ -9,7 +9,8 @@ async function getClient() {
   return axios.create({
     baseURL: `https://discord.com/api/v10`,
     headers: {
-      Authorization: `Bot ${await getSecret()}`
+      Authorization: `Bot ${await getSecret()}`,
+      'Accept-Encoding': '*'
     }
   })
 }
