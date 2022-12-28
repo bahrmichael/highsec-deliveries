@@ -73,6 +73,19 @@ const handler = async (event: any) => {
           content: `TODO`,
           // Make the response visible to only the user running the command
           flags: 64,
+          "components": [
+            {
+              "type": 1,
+              "components": [
+                {
+                  "type": 2,
+                  "label": "Click me!",
+                  "style": 1,
+                  "custom_id": "click_one"
+                }
+              ]
+            }
+          ]
         }
       })
     } else {
