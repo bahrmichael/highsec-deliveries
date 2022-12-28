@@ -251,7 +251,8 @@ const handler = async (event: any) => {
         console.log(JSON.stringify(components, null, 2))
 
         if (customId === 'order_modal') {
-            const janiceLink = interactionData.components.find((c) => c.components[0]?.custom_id === 'appraisal_link')?.value;
+            const janiceLink = components.find((c) => c.components[0]?.custom_id === 'appraisal_link')?.value;
+            console.log({janiceLink})
             const appraisalCode = extractId(janiceLink);
             if (!appraisalCode) {
                 return formatJSONResponse({
@@ -283,7 +284,7 @@ const handler = async (event: any) => {
                 })
             }
 
-            const destinationValue = interactionData.components.find((c) => c.components[0]?.custom_id === 'destination')?.value;
+            const destinationValue = components.find((c) => c.components[0]?.custom_id === 'destination')?.value;
             let destination;
             try {
                 const destinationResult = (await axios.post(`https://esi.evetech.net/v1/universe/ids/?datasource=tranquility`, [destinationValue])).data;
