@@ -56,7 +56,7 @@ const hello = async (event: APIGatewayProxyEvent) => {
         Item: {
             pk: `discord#${discordId}`,
             sk: `eve#${data.characterId}`,
-            characterName: data.characterName,
+            characterName: data.name,
         }
     }))
     await ddb.send(new PutCommand({
@@ -64,7 +64,7 @@ const hello = async (event: APIGatewayProxyEvent) => {
         Item: {
             pk: `eve#${data.characterId}`,
             sk: 'discord',
-            characterName: data.characterName,
+            characterName: data.name,
             discordId,
         }
     }))
@@ -76,7 +76,7 @@ const hello = async (event: APIGatewayProxyEvent) => {
 
     await discordClient.delete(`/webhooks/${APPLICATION_ID}/${interactionToken}/messages/@original`)
     await discordClient.post(`/webhooks/${APPLICATION_ID}/${interactionToken}`, {
-        content: `You have successfully verified the character ${data.characterName} and can now place orders with the command \`/order\`.`,
+        content: `You have successfully verified the character ${data.name} and can now place orders with the command \`/order\`.`,
         // Make the response visible to only the user running the command
         flags: 64,
     })
