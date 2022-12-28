@@ -222,7 +222,27 @@ const handler = async (event: any) => {
                     flags: 64,
                 }
             })
-        } else if (customId === 'order_modal') {
+        } else {
+            return formatJSONResponse({
+                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                data: {
+                    content: `I don't know how to handle the custom_id "${customId}".`,
+                    // Make the response visible to only the user running the command
+                    flags: 64,
+                }
+            })
+        }
+    } else if (data.type === InteractionType.APPLICATION_MODAL_SUBMIT) {
+
+        console.log(data)
+
+        const {data: interactionData, id: interactionId} = data;
+
+        console.log({interactionId})
+
+        const {custom_id: customId} = interactionData;
+
+        if (customId === 'order_modal') {
             return formatJSONResponse({
                 type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
                 data: {
@@ -235,7 +255,7 @@ const handler = async (event: any) => {
             return formatJSONResponse({
                 type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
                 data: {
-                    content: `I don't know how to handle the custom_id "${customId}".`,
+                    content: `I don't know how to handle the modal customId "${customId}".`,
                     // Make the response visible to only the user running the command
                     flags: 64,
                 }
