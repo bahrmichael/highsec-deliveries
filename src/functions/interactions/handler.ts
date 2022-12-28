@@ -75,7 +75,7 @@ const handler = async (event: any) => {
       }))
 
       const callbackUrl = `https://6qhjjllnai.execute-api.us-east-1.amazonaws.com/20221227/sso-callback`;
-      const signinUrl = `https://login.eveonline.com/v2/oauth/authorize/?response_type=code&redirect_uri=${callbackUrl}}&client_id=abce3c6539794647a0a31aa4492a7cb4&state=${state}`
+      const signinUrl = `https://login.eveonline.com/v2/oauth/authorize/?response_type=code&redirect_uri=${callbackUrl}&client_id=abce3c6539794647a0a31aa4492a7cb4&state=${state}`
 
       return formatJSONResponse({
         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
