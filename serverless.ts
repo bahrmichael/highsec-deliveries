@@ -48,7 +48,7 @@ const serverlessConfiguration: AWS = {
         Type : "AWS::CloudFormation::CustomResource",
         Properties : {
           ServiceToken : { 'Fn::GetAtt': ['RegisterDiscordCommandsLambdaFunction', 'Arn' ] },
-          Checksum: { 'Fn::Base63': JSON.stringify(commands) }
+          Checksum: { 'Fn::Base64': JSON.stringify(commands) }
         },
       },
     }
