@@ -16,6 +16,16 @@ async function getJaniceSecret(): Promise<string> {
     return secretResponse.SecretString
 }
 
+async function getJaniceClient() {
+    return axios.create({
+        baseURL: `https://janice.e-351.com/api/rest`,
+        headers: {
+            Authorization: await getJaniceSecret(),
+            'Accept-Encoding': 'gzip,deflate,compress'
+        }
+    })
+}
+
 function isVerified(headers: any, body: string | null): boolean {
 
     const signature = headers['x-signature-ed25519'];
@@ -305,13 +315,12 @@ async function getOrderValues(components: any[]): Promise<{janiceResult: any, de
         throw Error(`The appraisal link \`${janiceLink}\`is invalid.`)
     }
 
+    console.log('Requesting appraisal', {appraisalCode})
+
     let janiceResult;
     try {
-        janiceResult = (await axios.get(`https://janice.e-351.com/api/rest/v2/appraisal/${appraisalCode}`, {
-            headers: {
-                'X-ApiKey': await getJaniceSecret()
-            }
-        })).data;
+        const janiceClient = await getJaniceClient();
+        janiceResult = (await janiceClient.get(`https://janice.e-351.com/api/rest/v2/appraisal/${appraisalCode}`)).data;
     } catch (e) {
         console.error(e);
         throw Error(`Failed to check the appraisal. Please try again.`);
