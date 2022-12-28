@@ -26,6 +26,24 @@ async function getJaniceClient() {
     })
 }
 
+function getEsiClient() {
+    return axios.create({
+        baseURL: `https://esi.evetech.net`,
+        headers: {
+            'Accept-Encoding': 'gzip,deflate,compress'
+        }
+    })
+}
+
+function getPushxClient() {
+    return axios.create({
+        baseURL: `https://api.pushx.net/api`,
+        headers: {
+            'Accept-Encoding': 'gzip,deflate,compress'
+        }
+    })
+}
+
 function isVerified(headers: any, body: string | null): boolean {
 
     const signature = headers['x-signature-ed25519'];
@@ -264,12 +282,58 @@ const handler = async (event: any) => {
             try {
                 const result = await getOrderValues(components);
 
+                let systemName;
+                try {
+                    const stationInfo = (await getEsiClient().get(`/v2/universe/stations/${result.destination.id}`)).data;
+                    const {system_id} = stationInfo;
+                    const systemInfo = (await getEsiClient().get(`/v4/universe/systems/${system_id}`)).data;
+                    systemName = systemInfo.name;
+                } catch (e) {
+                    console.error(e);
+                    throw Error(`Failed to resolve system name. Please try again.`);
+                }
+
+                const volume = result.janiceResult.totalVolume;
+                const itemsValue = result.janiceResult.immediatePrices.totalSellPrice;
+
+                let shippingFee;
+                try {
+                    const shippingResult = (await getPushxClient().get(`/quote/json/?startSystemName=Jita&endSystemName=${systemName}&volume=${volume}&collateral=${itemsValue}&apiClient=highsec-deliveries`)).data;
+                    shippingFee = shippingResult.PriceNormal;
+                } catch (e) {
+                    console.error(e);
+                    throw Error(`Failed to calculate the shipping fee. Please try again.`);
+                }
+
+                let summary = 'Here\'s a summary of your order. Please review it carefully before choosing to confirm or cancel it.\n';
+                summary += `Items: ${new Intl.NumberFormat('en-US').format(itemsValue)}\n`
+                summary += `Shipping to ${systemName}: ${new Intl.NumberFormat('en-US').format(shippingFee)}\n`
+
                 return formatJSONResponse({
                     type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
                     data: {
-                        content: `WIP: ${JSON.stringify({destination: result.destination, sellValue: result.janiceResult.immediatePrices.totalSellPrice})}`,
+                        content: summary,
                         // Make the response visible to only the user running the command
                         flags: 64,
+                        components: [
+                            {
+                                type: 1,
+                                components: [
+                                    {
+                                        type: 2,
+                                        label: "Confirm",
+                                        style: 3,
+                                        custom_id: `confirm_order`
+                                    },
+                                    {
+                                        type: 2,
+                                        label: "Cancel",
+                                        style: 4,
+                                        custom_id: `cancel_order`
+                                    },
+                                ]
+                            }
+                        ]
                     }
                 })
             } catch (e) {
@@ -306,7 +370,7 @@ const handler = async (event: any) => {
     }
 };
 
-async function getOrderValues(components: any[]): Promise<{janiceResult: any, destination: string}> {
+async function getOrderValues(components: any[]): Promise<{janiceResult: any, destination: { name: string, id: number }}> {
     const janiceLink = components.flatMap((c) => c.components).find((c) => c.custom_id === 'appraisal_link')?.value;
     console.log({janiceLink})
     const appraisalCode = extractId(janiceLink);
@@ -329,7 +393,7 @@ async function getOrderValues(components: any[]): Promise<{janiceResult: any, de
     const destinationValue = components.flatMap((c) => c.components).find((c) => c.custom_id === 'destination')?.value;
     let destinationResult;
     try {
-        destinationResult = (await axios.post(`https://esi.evetech.net/v1/universe/ids/?datasource=tranquility`, [destinationValue])).data;
+        destinationResult = (await getEsiClient().post(`/v1/universe/ids/?datasource=tranquility`, [destinationValue])).data;
     } catch (e) {
         console.error(e);
         throw Error(`Failed to check the destination. Please try again.`);
@@ -338,7 +402,7 @@ async function getOrderValues(components: any[]): Promise<{janiceResult: any, de
     if (destinationResult.stations?.length === 0) {
         throw Error(`The name doesn't seem to match any station. Are you sure there's no typo and it's an exact match?`);
     }
-    const destination = destinationResult.stations[0]?.name;
+    const destination = destinationResult.stations[0];
 
     return {destination, janiceResult}
 }
