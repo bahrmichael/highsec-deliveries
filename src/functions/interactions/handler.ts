@@ -9,7 +9,7 @@ import {GetSecretValueCommand, SecretsManagerClient} from "@aws-sdk/client-secre
 
 const ssm = new SecretsManagerClient({});
 
-const {PUBLIC_KEY, LOGIN_STATE_TABLE, USERS_TABLE} = process.env;
+const {PUBLIC_KEY, LOGIN_STATE_TABLE, USERS_TABLE, ESI_CLIENT_ID} = process.env;
 
 async function getJaniceSecret(): Promise<string> {
     const secretResponse = await ssm.send(new GetSecretValueCommand({SecretId: 'highsec_deliveries'}))
@@ -113,7 +113,7 @@ const handler = async (event: any) => {
             }))
 
             const callbackUrl = `https://6qhjjllnai.execute-api.us-east-1.amazonaws.com/20221227/sso-callback`;
-            const signinUrl = `https://login.eveonline.com/v2/oauth/authorize/?response_type=code&redirect_uri=${callbackUrl}&client_id=abce3c6539794647a0a31aa4492a7cb4&state=${state}`
+            const signinUrl = `https://login.eveonline.com/v2/oauth/authorize/?response_type=code&redirect_uri=${encodeURIComponent(callbackUrl)}&client_id=${ESI_CLIENT_ID}&state=${state}`;
 
             return formatJSONResponse({
                 type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
@@ -322,7 +322,6 @@ const handler = async (event: any) => {
                     TableName: USERS_TABLE,
                     Key: {pk: `discord#${discordId}`, sk: 'balance'}
                 }))).Item;
-
                 if (!(balanceRecord?.available > 0)) {
                     throw Error(`Insufficient balance. Please link EVE characters with \`/signin\` and then transfer ISK from them to \`Highsec Deliveries\` to top up your balance. It may take up to 60 minutes for the balance to update. You can use \`/balance\` to check your current balance.`)
                 }
