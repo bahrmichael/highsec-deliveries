@@ -317,13 +317,24 @@ const handler = async (event: any) => {
 
         if (customId === 'order_modal') {
             try {
+                const discordId = data.member.user.id;
+                const balanceRecord = (await ddb.send(new GetCommand({
+                    TableName: USERS_TABLE,
+                    Key: {pk: `discord#${discordId}`, sk: 'balanace'}
+                }))).Item;
+
+                if (balanceRecord?.available > 0) {
+                    throw Error(`Insufficient balance. Please link EVE characters with \`/signin\` and then transfer ISK from them to \`Highsec Deliveries\` to top up your balance. It may take up to 60 minutes for the balance to update. You can use \`/balance\` to check your current balance.`)
+                }
+
                 const result = await getOrderValues(components);
 
                 let systemName;
                 try {
-                    const stationInfo = (await getEsiClient().get(`/v2/universe/stations/${result.destination.id}`)).data;
+                    const esiClient = getEsiClient();
+                    const stationInfo = (await esiClient.get(`/v2/universe/stations/${result.destination.id}`)).data;
                     const {system_id} = stationInfo;
-                    const systemInfo = (await getEsiClient().get(`/v4/universe/systems/${system_id}`)).data;
+                    const systemInfo = (await esiClient.get(`/v4/universe/systems/${system_id}`)).data;
                     systemName = systemInfo.name;
                 } catch (e) {
                     console.error(e);
@@ -343,8 +354,8 @@ const handler = async (event: any) => {
                 }
 
                 let summary = 'Here\'s a summary of your order. Please review it carefully before choosing to confirm or cancel it.\n';
-                summary += `Items: ${new Intl.NumberFormat('en-US').format(itemsValue)}\n`
-                summary += `Shipping to ${systemName}: ${new Intl.NumberFormat('en-US').format(shippingFee)}\n`
+                summary += `Items: ${new Intl.NumberFormat('en-US').format(itemsValue)} ISK (https://janice.e-351.com/a/${result.janiceResult.code})\n`
+                summary += `Shipping to ${systemName}: ${new Intl.NumberFormat('en-US').format(shippingFee)} ISK\n`
 
                 return formatJSONResponse({
                     type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
