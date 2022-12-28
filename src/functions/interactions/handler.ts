@@ -51,7 +51,7 @@ const handler = async (event: any) => {
 
     console.log({interactionId})
 
-    const {name: command, options, custom_id: customId} = interactionData;
+    const {name: command, options} = interactionData;
 
     console.log({options});
 
@@ -107,7 +107,26 @@ const handler = async (event: any) => {
           ]
         }
       })
-    } else if (customId === 'confirm_order') {
+    } else {
+      return formatJSONResponse({
+        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+        data: {
+          content: `I don't know how to handle the command "${command}".`,
+          // Make the response visible to only the user running the command
+          flags: 64,
+        }
+      })
+    }
+  } else if (data.type === InteractionType.MESSAGE_COMPONENT) {
+    console.log(data)
+
+    const {data: interactionData, id: interactionId} = data;
+
+    console.log({interactionId})
+
+    const {custom_id: customId} = interactionData;
+
+    if (customId === 'confirm_order') {
       return formatJSONResponse({
         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
         data: {
@@ -129,12 +148,21 @@ const handler = async (event: any) => {
       return formatJSONResponse({
         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
         data: {
-          content: `I don't know how to handle the command "${command}".`,
+          content: `I don't know how to handle the custom_id "${customId}".`,
           // Make the response visible to only the user running the command
           flags: 64,
         }
       })
     }
+  } else {
+    return formatJSONResponse({
+      type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+      data: {
+        content: `I don't know how to handle the interaction type "${event.body.type}".`,
+        // Make the response visible to only the user running the command
+        flags: 64,
+      }
+    })
   }
 };
 
