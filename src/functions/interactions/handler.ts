@@ -243,13 +243,12 @@ const handler = async (event: any) => {
         }
     } else if (data.type === InteractionType.APPLICATION_MODAL_SUBMIT) {
 
-        console.log(data)
-
         const {data: interactionData, id: interactionId} = data;
+        const {custom_id: customId, components} = interactionData;
 
-        console.log({interactionId})
+        console.log({interactionId, components})
 
-        const {custom_id: customId} = interactionData;
+        console.log(JSON.stringify(components, null, 2))
 
         if (customId === 'order_modal') {
             const janiceLink = interactionData.components.find((c) => c.components[0]?.custom_id === 'appraisal_link')?.value;
