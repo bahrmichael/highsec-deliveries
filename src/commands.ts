@@ -10,4 +10,8 @@ export const commands = [{
     "name": "test",
     "type": 1,
     "description": "test2"
+}, {
+    name: 'list-characters',
+    type: 1,
+    description: 'Tell me which characters I have verified here.'
 }]

@@ -3,9 +3,9 @@ import {middyfy} from '@libs/lambda';
 import {verifyKey, InteractionType, InteractionResponseType} from 'discord-interactions';
 import {ulid} from "ulid";
 import {ddb} from "@libs/ddb-client";
-import { PutCommand } from '@aws-sdk/lib-dynamodb';
+import {PutCommand, QueryCommand} from '@aws-sdk/lib-dynamodb';
 
-const {PUBLIC_KEY, LOGIN_STATE_TABLE} = process.env;
+const {PUBLIC_KEY, LOGIN_STATE_TABLE, USERS_TABLE} = process.env;
 
 function isVerified(headers: any, body: string | null): boolean {
 
@@ -124,6 +124,40 @@ const handler = async (event: any) => {
               ]
             }
           ]
+        }
+      })
+    } else if (command === 'list-characters') {
+
+      const discordId = data.member.user.id;
+
+      const items = (await ddb.send(new QueryCommand({
+        TableName: USERS_TABLE,
+        KeyConditionExpression: 'pk = :p and begins_with(sk, :s)',
+        ExpressionAttributeValues: {
+          ':p': `discord#${discordId}`,
+          ':s': `eve#`,
+        }
+      }))).Items;
+
+      if (!items) {
+        return formatJSONResponse({
+          type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+          data: {
+            content: `You have not verified any characters yet. Please use the command /signin to get started.`,
+            // Make the response visible to only the user running the command
+            flags: 64,
+          }
+        })
+      }
+
+      const characterNames = items.map((i) => i.charactername).join('\n');
+
+      return formatJSONResponse({
+        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+        data: {
+          content: `You have verified the following characters:\n${characterNames}`,
+          // Make the response visible to only the user running the command
+          flags: 64,
         }
       })
     } else {
