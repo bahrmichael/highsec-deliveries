@@ -51,7 +51,7 @@ const handler = async (event: any) => {
 
     console.log({interactionId})
 
-    const {name: command, options} = interactionData;
+    const {name: command, options, custom_id: customId} = interactionData;
 
     console.log({options});
 
@@ -60,9 +60,22 @@ const handler = async (event: any) => {
       return formatJSONResponse({
         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
         data: {
-          content: `Please use this link to sign in with EVE Online: https://test.com`,
+          content: `Please click on the button below to sign in with EVE Online.`,
           // Make the response visible to only the user running the command
           flags: 64,
+          components: [
+            {
+              type: 1,
+              components: [
+                {
+                  type: 2,
+                  label: "Sign in with EVE Online",
+                  style: 5,
+                  url: "https://test.com"
+                },
+              ]
+            }
+          ]
         }
       })
     } else if (command === 'order') {
@@ -73,19 +86,43 @@ const handler = async (event: any) => {
           content: `TODO`,
           // Make the response visible to only the user running the command
           flags: 64,
-          "components": [
+          components: [
             {
-              "type": 1,
-              "components": [
+              type: 1,
+              components: [
                 {
-                  "type": 2,
-                  "label": "Click me!",
-                  "style": 1,
-                  "custom_id": "click_one"
+                  type: 2,
+                  label: "Confirm",
+                  style: 3,
+                  custom_id: "confirm_order"
+                },
+                {
+                  type: 2,
+                  label: "Cancel",
+                  style: 4,
+                  custom_id: "cancel_order"
                 }
               ]
             }
           ]
+        }
+      })
+    } else if (customId === 'confirm_order') {
+      return formatJSONResponse({
+        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+        data: {
+          content: `Thank you! An agent will soon pick up your order. We'll let you know when it's in progress.`,
+          // Make the response visible to only the user running the command
+          flags: 64,
+        }
+      })
+    } else if (customId === 'cancel_order') {
+      return formatJSONResponse({
+        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+        data: {
+          content: `Your order has been cancelled.`,
+          // Make the response visible to only the user running the command
+          flags: 64,
         }
       })
     } else {
