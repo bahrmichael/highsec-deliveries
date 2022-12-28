@@ -5,8 +5,6 @@ import {commands} from "../../commands";
 
 const ssm = new SecretsManagerClient({});
 
-const {VERSION, APPLICATION_ID} = process.env;
-
 async function getClient() {
   return axios.create({
     baseURL: `https://discord.com/api/v10`,
@@ -21,27 +19,29 @@ async function getSecret() {
   return secretResponse.SecretString
 }
 
-async function writeCommands() {
-  if (VERSION !== '20221227') {
-    return;
-  }
+async function writeCommands(applicationId: string) {
   const client = await getClient();
-  await client.put(`/applications/${APPLICATION_ID}/commands`, commands);
+  await client.put(`/applications/${applicationId}/commands`, commands);
 }
 
 export const main = async (event: CloudFormationCustomResourceEvent, context: any) => {
 
   const requestType = event.RequestType;
+  const {Version, ApplicationId} = event.ResourceProperties;
+
+  console.log({requestType, Version, ApplicationId})
 
   try {
-    switch (requestType) {
-      case "Create":
-      case "Update":
-        await writeCommands();
-        break;
-      // case "Delete":
-      //   await deleteComamnds();
-      //   break;
+    if (Version === '20221227') {
+      switch (requestType) {
+        case "Create":
+        case "Update":
+          await writeCommands(ApplicationId);
+          // break;
+          // case "Delete":
+          //   await deleteComamnds();
+          //   break;
+      }
     }
     await sendResponse(event, context, "SUCCESS", {});
   } catch (e) {
