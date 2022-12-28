@@ -12,85 +12,82 @@ const {LOGIN_STATE_TABLE, USERS_TABLE, GUILD_ID, VERIFIED_ROLE_ID, APPLICATION_I
 const AUTH_API = `https://uc4v3lk6rh.execute-api.us-east-1.amazonaws.com/dev/auth`;
 
 async function getSecret() {
-  const secretResponse = await ssm.send(new GetSecretValueCommand({SecretId: 'highsec_deliveries_discord_bot_secret'}))
-  return secretResponse.SecretString
+    const secretResponse = await ssm.send(new GetSecretValueCommand({SecretId: 'highsec_deliveries_discord_bot_secret'}))
+    return secretResponse.SecretString
 }
 
 async function getClient() {
-  return axios.create({
-    baseURL: `https://discord.com/api/v10`,
-    headers: {
-      Authorization: `Bot ${await getSecret()}`,
-      'Accept-Encoding': 'gzip,deflate,compress'
-    }
-  })
+    return axios.create({
+        baseURL: `https://discord.com/api/v10`,
+        headers: {
+            Authorization: `Bot ${await getSecret()}`,
+            'Accept-Encoding': 'gzip,deflate,compress'
+        }
+    })
 }
 
 const hello = async (event: APIGatewayProxyEvent) => {
 
-  console.log(event.queryStringParameters);
+    console.log(event.queryStringParameters);
 
-  const state = event.queryStringParameters.state;
+    const state = event.queryStringParameters.state;
 
-  const loginState = (await ddb.send(new GetCommand({
-    TableName: LOGIN_STATE_TABLE,
-    Key: {state}
-  }))).Item;
+    const loginState = (await ddb.send(new GetCommand({
+        TableName: LOGIN_STATE_TABLE,
+        Key: {state}
+    }))).Item;
 
-  if (!loginState) {
+    if (!loginState) {
+        return {
+            statusCode: 200,
+            body: 'Login failed.',
+            headers: {
+                'Content-Type': 'text/html'
+            }
+        }
+    }
+
+    const {discordId, interactionId, interactionToken} = loginState;
+
+    const {data} = await axios.get(`${AUTH_API}?code=${event.queryStringParameters.code}&appId=highsec-deliveries`);
+
+    await ddb.send(new PutCommand({
+        TableName: USERS_TABLE,
+        Item: {
+            pk: `discord#${discordId}`,
+            sk: `eve#${data.characterId}`,
+            characterName: data.characterName,
+        }
+    }))
+    await ddb.send(new PutCommand({
+        TableName: USERS_TABLE,
+        Item: {
+            pk: `eve#${data.characterId}`,
+            sk: 'discord',
+            characterName: data.characterName,
+            discordId,
+        }
+    }))
+
+    const discordClient = await getClient();
+    await discordClient.put(`/guilds/${GUILD_ID}/members/${discordId}/roles/${VERIFIED_ROLE_ID}`)
+
+    console.log({interactionId, interactionToken})
+
+    await discordClient.delete(`/webhooks/${APPLICATION_ID}/${interactionToken}/messages/@original`)
+    await discordClient.post(`/webhooks/${APPLICATION_ID}/${interactionToken}`, {
+        content: `You have successfully verified the character ${data.characterName} and can now place orders with the command \`/order\`.`,
+        // Make the response visible to only the user running the command
+        flags: 64,
+    })
+
     return {
-      statusCode: 200,
-      body: 'Login failed.',
-      headers: {
-        'Content-Type': 'text/html'
-      }
+        statusCode: 200,
+        body: 'Login complete. You may close this window and return to Discord.',
+        headers: {
+            'Content-Type': 'text/html'
+        }
     }
-  }
-
-  const {discordId, interactionId, interactionToken} = loginState;
-
-  const {data} = await axios.get(`${AUTH_API}?code=${event.queryStringParameters.code}&appId=highsec-deliveries`);
-
-  await ddb.send(new PutCommand({
-    TableName: USERS_TABLE,
-    Item: {
-      pk: `discord#${discordId}`,
-      sk: `eve#${data.characterId}`,
-      characterName: data.characterName,
-    }
-  }))
-  await ddb.send(new PutCommand({
-    TableName: USERS_TABLE,
-    Item: {
-      pk: `eve#${data.characterId}`,
-      sk: 'discord',
-      characterName: data.characterName,
-      discordId,
-    }
-  }))
-
-  const discordClient = await getClient();
-  await discordClient.put(`/guilds/${GUILD_ID}/members/${discordId}/roles/${VERIFIED_ROLE_ID}`)
-
-  console.log({interactionId, interactionToken})
-
-  await discordClient.patch(`/webhooks/${APPLICATION_ID}/${interactionId}/messages/@original`, {
-    content: `:white_check_mark: You successfully verified the character ${data.characterName}. We added the role "Verified" to your Discord account. You can now use the command \`/order\` to place an order.`,
-    components: [
-      {
-        type: 1,
-        components: []
-      }
-    ]
-  })
-
-  return {
-    statusCode: 200,
-    body: 'Login complete. You may close this window and return to Discord.',
-    headers: {
-      'Content-Type': 'text/html'
-    }
-  }
 };
 
 export const main = middyfy(hello);
