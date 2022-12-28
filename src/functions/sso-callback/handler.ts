@@ -7,7 +7,7 @@ import {GetSecretValueCommand, SecretsManagerClient} from "@aws-sdk/client-secre
 
 const ssm = new SecretsManagerClient({});
 
-const {LOGIN_STATE_TABLE, USERS_TABLE, GUILD_ID, VERIFIED_ROLE_ID} = process.env;
+const {LOGIN_STATE_TABLE, USERS_TABLE, GUILD_ID, VERIFIED_ROLE_ID, APPLICATION_ID} = process.env;
 
 const AUTH_API = `https://uc4v3lk6rh.execute-api.us-east-1.amazonaws.com/dev/auth`;
 
@@ -47,7 +47,7 @@ const hello = async (event: APIGatewayProxyEvent) => {
     }
   }
 
-  const {discordId, interactionId} = loginState;
+  const {discordId, interactionId, interactionToken} = loginState;
 
   const {data} = await axios.get(`${AUTH_API}?code=${event.queryStringParameters.code}&appId=highsec-deliveries`);
 
@@ -72,9 +72,17 @@ const hello = async (event: APIGatewayProxyEvent) => {
   const discordClient = await getClient();
   await discordClient.put(`/guilds/${GUILD_ID}/members/${discordId}/roles/${VERIFIED_ROLE_ID}`)
 
-  console.log({interactionId})
-  // todo: update original message to disable login button
-  // https://discord.com/developers/docs/interactions/receiving-and-responding#edit-original-interaction-response
+  console.log({interactionId, interactionToken})
+
+  await discordClient.patch(`/webhooks/${APPLICATION_ID}/${interactionToken}/messages/@original`, {
+    content: `:white_check_mark: You successfully verified the character ${data.characterName}. We added the role "Verified" to your Discord account. You can now use the command \`/order\` to place an order.`,
+    components: [
+      {
+        type: 1,
+        components: []
+      }
+    ]
+  })
 
   return {
     statusCode: 200,

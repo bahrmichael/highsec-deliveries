@@ -50,7 +50,7 @@ const handler = async (event: any) => {
   } else if (data.type === InteractionType.APPLICATION_COMMAND) {
     console.log(data)
 
-    const {data: interactionData, id: interactionId} = data;
+    const {data: interactionData, id: interactionId, token: interactionToken} = data;
 
     console.log({interactionId})
 
@@ -68,6 +68,7 @@ const handler = async (event: any) => {
         Item: {
           state,
           interactionId,
+          interactionToken,
           discordId,
           // one hour time to live
           timetolive: Math.ceil(new Date().getTime() / 1_000 + 60 * 60)
@@ -143,7 +144,7 @@ const handler = async (event: any) => {
         return formatJSONResponse({
           type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
           data: {
-            content: `You have not verified any characters yet. Please use the command /signin to get started.`,
+            content: `You have not verified any characters yet. Please use the command \`/signin\` to get started.`,
             // Make the response visible to only the user running the command
             flags: 64,
           }
