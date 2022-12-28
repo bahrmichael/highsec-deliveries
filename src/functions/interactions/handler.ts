@@ -173,7 +173,7 @@ const handler = async (event: any) => {
                 })
             }
 
-            const characterNames = items.map((i) => i.charactername).join('\n');
+            const characterNames = items.map((i) => i.characterName).join('\n');
 
             return formatJSONResponse({
                 type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
