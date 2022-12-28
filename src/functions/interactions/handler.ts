@@ -3,7 +3,7 @@ import {middyfy} from '@libs/lambda';
 import {verifyKey, InteractionType, InteractionResponseType} from 'discord-interactions';
 import {ulid} from "ulid";
 import {ddb} from "@libs/ddb-client";
-import {PutCommand, QueryCommand} from '@aws-sdk/lib-dynamodb';
+import {GetCommand, PutCommand, QueryCommand} from '@aws-sdk/lib-dynamodb';
 import axios from "axios";
 import {GetSecretValueCommand, SecretsManagerClient} from "@aws-sdk/client-secrets-manager";
 
@@ -186,6 +186,43 @@ const handler = async (event: any) => {
                     // }
                 }
             })
+        } else if (command === 'balance') {
+            const discordId = data.member.user.id;
+
+            const balanceRecord = (await ddb.send(new GetCommand({
+                TableName: USERS_TABLE,
+                Key: {pk: `discord#${discordId}`, sk: 'balance'}
+            }))).Item;
+
+            if (!balanceRecord) {
+                return formatJSONResponse({
+                    type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                    data: {
+                        content: `You balance is 0 ISK. Please link a character with the command \`/signin\` and then transfer ISK from from it to \`Highsec Deliveries\` to top up your balance.`,
+                        // Make the response visible to only the user running the command
+                        flags: 64,
+                    }
+                });
+            }
+
+            let summary;
+            if (balanceRecord.reserved > 0) {
+                const available = new Intl.NumberFormat('en-US').format(balanceRecord.available);
+                const reserved = new Intl.NumberFormat('en-US').format(balanceRecord.reserved);
+                summary = `You have ${available} ISk available. ${reserved} is reserved by pending orders. Use the command \`/orders\` to show your orders.`
+            } else {
+                const available = new Intl.NumberFormat('en-US').format(balanceRecord.available);
+                summary = `You have ${available} ISk available.`
+            }
+
+            return formatJSONResponse({
+                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                data: {
+                    content: summary,
+                    // Make the response visible to only the user running the command
+                    flags: 64,
+                }
+            });
         } else if (command === 'list-characters') {
 
             const discordId = data.member.user.id;

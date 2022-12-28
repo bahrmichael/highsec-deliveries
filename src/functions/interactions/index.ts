@@ -22,7 +22,7 @@ export default {
     Resource: {'Fn::GetAtt': ['LoginStateTable', 'Arn']},
   }, {
     Effect: 'Allow',
-    Action: ['dynamodb:Query'],
+    Action: ['dynamodb:Query', 'dynamodb:GetItem'],
     Resource: {'Fn::GetAtt': ['UsersTable', 'Arn']},
   }, {
     Effect: 'Allow',
