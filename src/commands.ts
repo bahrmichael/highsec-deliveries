@@ -9,5 +9,5 @@ export const commands = [{
 }, {
     "name": "test",
     "type": 1,
-    "description": "test"
+    "description": "test2"
 }]
