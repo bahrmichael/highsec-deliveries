@@ -20,7 +20,7 @@ async function getJaniceClient() {
     return axios.create({
         baseURL: `https://janice.e-351.com/api/rest`,
         headers: {
-            Authorization: await getJaniceSecret(),
+            'X-ApiKey': await getJaniceSecret(),
             'Accept-Encoding': 'gzip,deflate,compress'
         }
     })
