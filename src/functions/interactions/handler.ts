@@ -251,74 +251,29 @@ const handler = async (event: any) => {
         console.log(JSON.stringify(components, null, 2))
 
         if (customId === 'order_modal') {
-            const janiceLink = components.find((c) => c.components[0]?.custom_id === 'appraisal_link')?.value;
-            console.log({janiceLink})
-            const appraisalCode = extractId(janiceLink);
-            if (!appraisalCode) {
-                return formatJSONResponse({
-                    type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                    data: {
-                        content: `The appraisal link \`${janiceLink}\`is invalid.`,
-                        // Make the response visible to only the user running the command
-                        flags: 64,
-                    }
-                })
-            }
-
-            let janiceResult;
             try {
-                janiceResult = (await axios.get(`https://janice.e-351.com/api/rest/v2/appraisal/${appraisalCode}`, {
-                    headers: {
-                        'X-ApiKey': await getJaniceSecret()
-                    }
-                })).data;
-            } catch (e) {
-                console.error(e);
+                const result = await getOrderValues(components);
+
                 return formatJSONResponse({
                     type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
                     data: {
-                        content: `Failed to check the appraisal. Please try again.`,
+                        content: `WIP: ${JSON.stringify({destination: result.destination, sellValue: result.janiceResult.immediatePrices.totalSellPrice})}`,
+                        // Make the response visible to only the user running the command
+                        flags: 64,
+                    }
+                })
+            } catch (e) {
+                console.log(e)
+                return formatJSONResponse({
+                    type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                    data: {
+                        content: e.message,
                         // Make the response visible to only the user running the command
                         flags: 64,
                     }
                 })
             }
 
-            const destinationValue = components.find((c) => c.components[0]?.custom_id === 'destination')?.value;
-            let destination;
-            try {
-                const destinationResult = (await axios.post(`https://esi.evetech.net/v1/universe/ids/?datasource=tranquility`, [destinationValue])).data;
-                if (destinationResult.stations?.length === 0) {
-                    return formatJSONResponse({
-                        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                        data: {
-                            content: `The name doesn't seem to match any station. Are you sure there's no typo and it's an exact match?`,
-                            // Make the response visible to only the user running the command
-                            flags: 64,
-                        }
-                    })
-                }
-                destination = destinationResult.stations[0]?.name;
-            } catch (e) {
-                console.error(e);
-                return formatJSONResponse({
-                    type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                    data: {
-                        content: `Failed to check the destination. Please try again.`,
-                        // Make the response visible to only the user running the command
-                        flags: 64,
-                    }
-                })
-            }
-
-            return formatJSONResponse({
-                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                data: {
-                    content: `WIP: ${JSON.stringify({destination, appraisalCode, sellValue: janiceResult.immediatePrices.totalSellPrice})}`,
-                    // Make the response visible to only the user running the command
-                    flags: 64,
-                }
-            })
         } else {
             return formatJSONResponse({
                 type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
@@ -340,6 +295,44 @@ const handler = async (event: any) => {
         })
     }
 };
+
+async function getOrderValues(components: any[]): Promise<{janiceResult: any, destination: string}> {
+    const janiceLink = components.flatMap((c) => c.components).find((c) => c.custom_id === 'appraisal_link')?.value;
+    console.log({janiceLink})
+    const appraisalCode = extractId(janiceLink);
+    console.log({appraisalCode})
+    if (!appraisalCode) {
+        throw Error(`The appraisal link \`${janiceLink}\`is invalid.`)
+    }
+
+    let janiceResult;
+    try {
+        janiceResult = (await axios.get(`https://janice.e-351.com/api/rest/v2/appraisal/${appraisalCode}`, {
+            headers: {
+                'X-ApiKey': await getJaniceSecret()
+            }
+        })).data;
+    } catch (e) {
+        console.error(e);
+        throw Error(`Failed to check the appraisal. Please try again.`);
+    }
+
+    const destinationValue = components.flatMap((c) => c.components).find((c) => c.custom_id === 'destination')?.value;
+    let destinationResult;
+    try {
+        destinationResult = (await axios.post(`https://esi.evetech.net/v1/universe/ids/?datasource=tranquility`, [destinationValue])).data;
+    } catch (e) {
+        console.error(e);
+        throw Error(`Failed to check the destination. Please try again.`);
+    }
+
+    if (destinationResult.stations?.length === 0) {
+        throw Error(`The name doesn't seem to match any station. Are you sure there's no typo and it's an exact match?`);
+    }
+    const destination = destinationResult.stations[0]?.name;
+
+    return {destination, janiceResult}
+}
 
 function extractId(url: string | undefined): string | null {
     if (!url) {
