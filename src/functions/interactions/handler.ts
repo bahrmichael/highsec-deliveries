@@ -320,7 +320,7 @@ async function getOrderValues(components: any[]): Promise<{janiceResult: any, de
     let janiceResult;
     try {
         const janiceClient = await getJaniceClient();
-        janiceResult = (await janiceClient.get(`https://janice.e-351.com/api/rest/v2/appraisal/${appraisalCode}`)).data;
+        janiceResult = (await janiceClient.get(`/v2/appraisal/${appraisalCode}`)).data;
     } catch (e) {
         console.error(e);
         throw Error(`Failed to check the appraisal. Please try again.`);
