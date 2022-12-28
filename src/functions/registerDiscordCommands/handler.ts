@@ -28,9 +28,13 @@ async function writeCommands() {
   const client = await getClient();
 
   const commands = [{
-    "name": "blep",
+    "name": "signin",
     "type": 1,
-    "description": "Send a random adorable animal photo",
+    "description": "Sign in with EVE Online",
+  }, {
+    "name": "order",
+    "type": 1,
+    "description": "Place an order",
   }]
 
   await client.put(`/applications/${APPLICATION_ID}/commands`, commands);
