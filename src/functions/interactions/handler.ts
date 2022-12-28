@@ -12,7 +12,7 @@ const ssm = new SecretsManagerClient({});
 const {PUBLIC_KEY, LOGIN_STATE_TABLE, USERS_TABLE} = process.env;
 
 async function getJaniceSecret(): Promise<string> {
-    const secretResponse = await ssm.send(new GetSecretValueCommand({SecretId: 'highsec_deliveries_discord_bot_secret'}))
+    const secretResponse = await ssm.send(new GetSecretValueCommand({SecretId: 'highsec_deliveries_janice_key'}))
     return secretResponse.SecretString
 }
 
