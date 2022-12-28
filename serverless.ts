@@ -1,6 +1,7 @@
 import type { AWS } from '@serverless/typescript';
 
 import * as functions from 'src/functions';
+import {commands} from "./src/commands";
 
 const serverlessConfiguration: AWS = {
   service: 'highsec-deliveries',
@@ -47,6 +48,7 @@ const serverlessConfiguration: AWS = {
         Type : "AWS::CloudFormation::CustomResource",
         Properties : {
           ServiceToken : { 'Fn::GetAtt': ['RegisterDiscordCommandsLambdaFunction', 'Arn' ] },
+          Checksum: { 'Fn::Base63': JSON.stringify(commands) }
         },
       },
     }

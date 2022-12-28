@@ -1,6 +1,7 @@
 import {CloudFormationCustomResourceEvent} from "aws-lambda";
 import axios from 'axios';
 import {GetSecretValueCommand, SecretsManagerClient} from "@aws-sdk/client-secrets-manager";
+import {commands} from "../../commands";
 
 const ssm = new SecretsManagerClient({});
 
@@ -24,19 +25,7 @@ async function writeCommands() {
   if (VERSION !== '20221227') {
     return;
   }
-
   const client = await getClient();
-
-  const commands = [{
-    "name": "signin",
-    "type": 1,
-    "description": "Sign in with EVE Online",
-  }, {
-    "name": "order",
-    "type": 1,
-    "description": "Place an order",
-  }]
-
   await client.put(`/applications/${APPLICATION_ID}/commands`, commands);
 }
 
