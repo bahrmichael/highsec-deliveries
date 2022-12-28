@@ -74,7 +74,7 @@ const hello = async (event: APIGatewayProxyEvent) => {
 
   console.log({interactionId, interactionToken})
 
-  await discordClient.patch(`/webhooks/${APPLICATION_ID}/${interactionToken}/messages/@original`, {
+  await discordClient.patch(`/webhooks/${APPLICATION_ID}/${interactionId}/messages/@original`, {
     content: `:white_check_mark: You successfully verified the character ${data.characterName}. We added the role "Verified" to your Discord account. You can now use the command \`/order\` to place an order.`,
     components: [
       {
