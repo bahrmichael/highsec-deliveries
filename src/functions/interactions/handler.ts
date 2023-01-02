@@ -9,7 +9,7 @@ import {GetSecretValueCommand, SecretsManagerClient} from "@aws-sdk/client-secre
 
 const ssm = new SecretsManagerClient({});
 
-const {PUBLIC_KEY, LOGIN_STATE_TABLE, USERS_TABLE, ESI_CLIENT_ID, API_ID, VERSION} = process.env;
+const {PUBLIC_KEY, LOGIN_STATE_TABLE, USERS_TABLE, ESI_CLIENT_ID, API_ID, VERSION, ORDERS_TABLE} = process.env;
 
 async function getJaniceSecret(): Promise<string> {
     const secretResponse = await ssm.send(new GetSecretValueCommand({SecretId: 'highsec_deliveries'}))
@@ -38,6 +38,20 @@ function getEsiClient() {
 function getPushxClient() {
     return axios.create({
         baseURL: `https://api.pushx.net/api`,
+        headers: {
+            'Accept-Encoding': 'gzip,deflate,compress'
+        }
+    })
+}
+
+async function getDiscordAgentsWebhook() {
+    const secretResponse = await ssm.send(new GetSecretValueCommand({SecretId: 'highsec_deliveries'}))
+    return JSON.parse(secretResponse.SecretString).agents_webhook;
+}
+
+async function getDiscordWebhookAgentsClient() {
+    return axios.create({
+        baseURL: await getDiscordAgentsWebhook(),
         headers: {
             'Accept-Encoding': 'gzip,deflate,compress'
         }
@@ -176,23 +190,6 @@ const handler = async (event: any) => {
                             required: true
                         }]
                     }]
-                    // {
-                    //   type: 1,
-                    //   components: [
-                    //     {
-                    //       type: 2,
-                    //       label: "Confirm",
-                    //       style: 3,
-                    //       custom_id: "confirm_order"
-                    //     },
-                    //     {
-                    //       type: 2,
-                    //       label: "Cancel",
-                    //       style: 4,
-                    //       custom_id: "cancel_order"
-                    //     }
-                    //   ]
-                    // }
                 }
             })
         } else if (command === 'balance') {
@@ -285,7 +282,41 @@ const handler = async (event: any) => {
 
         const {custom_id: customId} = interactionData;
 
-        if (customId === 'confirm_order') {
+        if (customId.startsWith('confirm_order')) {
+            const orderId = customId.split('#')[1];
+            const order = (await ddb.send(new GetCommand({
+                TableName: ORDERS_TABLE,
+                Key: {pk: orderId}
+            }))).Item;
+
+            if (!order) {
+                return formatJSONResponse({
+                    type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                    data: {
+                        content: `We couldn't find the order anymore. Please reach out to an Admin with the orderId ${orderId}.`,
+                        // Make the response visible to only the user running the command
+                        flags: 64,
+                    }
+                })
+            }
+
+            const discord = await getDiscordWebhookAgentsClient();
+            await discord.post(``, {
+                content: `A new order is waiting!\nhttps://janice.e-351.com/a/${order.appraisalCode}\n${order.destinationName}`,
+                components: [
+                    {
+                        type: 1,
+                        components: [
+                            {
+                                type: 2,
+                                label: "Take",
+                                style: 3,
+                                custom_id: `take_order#${orderId}`
+                            },
+                        ]
+                    }
+                ]
+            });
             // todo: remove the previous message, or disable its buttons
             return formatJSONResponse({
                 type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
@@ -295,7 +326,7 @@ const handler = async (event: any) => {
                     flags: 64,
                 }
             })
-        } else if (customId === 'cancel_order') {
+        } else if (customId.startsWith('cancel_order')) {
             // todo: remove the previous message, or disable its buttons
             return formatJSONResponse({
                 type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
@@ -365,6 +396,19 @@ const handler = async (event: any) => {
                 summary += `Items: ${new Intl.NumberFormat('en-US').format(itemsValue)} ISK (https://janice.e-351.com/a/${janiceResult.code})\n`
                 summary += `Shipping to ${systemName}: ${new Intl.NumberFormat('en-US').format(shippingFee)} ISK\n`
 
+                const orderId = ulid();
+                await ddb.send(new PutCommand({
+                    TableName: ORDERS_TABLE,
+                    Item: {
+                        pk: orderId,
+                        appraisalCode: janiceResult.code,
+                        itemsValue: itemsValue,
+                        destinationName: destination.name,
+                        destinationId: destination.id,
+                        orderStatus: 'PENDING'
+                    }
+                }))
+
                 return formatJSONResponse({
                     type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
                     data: {
@@ -379,13 +423,13 @@ const handler = async (event: any) => {
                                         type: 2,
                                         label: "Confirm",
                                         style: 3,
-                                        custom_id: `confirm_order`
+                                        custom_id: `confirm_order#${orderId}`
                                     },
                                     {
                                         type: 2,
                                         label: "Cancel",
                                         style: 4,
-                                        custom_id: `cancel_order`
+                                        custom_id: `cancel_order#${orderId}`
                                     },
                                 ]
                             }

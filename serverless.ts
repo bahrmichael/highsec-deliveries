@@ -44,6 +44,20 @@ const serverlessConfiguration: AWS = {
   },
   resources: {
     Resources: {
+      OrdersTable: {
+        Type: 'AWS::DynamoDB::Table',
+        Properties: {
+          BillingMode: 'PAY_PER_REQUEST',
+          KeySchema: [{
+            AttributeName: 'pk',
+            KeyType: 'HASH'
+          }],
+          AttributeDefinitions: [{
+            AttributeName: 'pk',
+            AttributeType: 'S',
+          }],
+        }
+      },
       TransactionsTable: {
         Type: 'AWS::DynamoDB::Table',
         Properties: {
