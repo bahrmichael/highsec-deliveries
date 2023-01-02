@@ -411,7 +411,7 @@ const handler = async (event: any) => {
                     }
                 })
             }
-            if (order.status !== 'CONFIRMED') {
+            if (order.orderStatus !== 'CONFIRMED') {
                 return formatJSONResponse({
                     type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
                     data: {
