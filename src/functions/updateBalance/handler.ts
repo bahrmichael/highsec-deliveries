@@ -47,9 +47,10 @@ export const main = async (event: DynamoDBStreamEvent) => {
         await ddb.send(new UpdateCommand({
             TableName: USERS_TABLE,
             Key: { pk: `discord#${characterRecord.discordId}`, sk: 'balance' },
-            UpdateExpression: 'set balance = balance + :a',
+            UpdateExpression: 'set balance = if_not_exists(balance, :b) + :a',
             ExpressionAttributeValues: {
                 ':a': amount,
+                ':b': 0,
             }
         }));
     }
