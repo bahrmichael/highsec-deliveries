@@ -18,7 +18,7 @@ const {
     VERSION,
     ORDERS_TABLE,
     AGENT_WEBHOOK_ID,
-    AGENT_WEBHOOK_TOKEN
+    AGENT_WEBHOOK_TOKEN,
 } = process.env;
 
 async function getJaniceSecret(): Promise<string> {
@@ -349,6 +349,14 @@ const handler = async (event: any) => {
                 UpdateExpression: 'set orderStatus = :o',
                 ExpressionAttributeValues: {
                     ':o': 'CONFIRMED'
+                }
+            }));
+            await ddb.send(new UpdateCommand({
+                TableName: USERS_TABLE,
+                Key: { pk: `discord#${discordId}`, sk: 'balance' },
+                UpdateExpression: 'set balance = balance - :a',
+                ExpressionAttributeValues: {
+                    ':a': totalCost,
                 }
             }));
 
