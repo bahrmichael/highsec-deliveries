@@ -380,6 +380,16 @@ const handler = async (event: any) => {
                     }
                 })
             }
+            if (order.status !== 'CONFIRMED') {
+                return formatJSONResponse({
+                    type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                    data: {
+                        content: `The order has already been taken.`,
+                        // Make the response visible to only the user running the command
+                        flags: 64,
+                    }
+                })
+            }
 
             await ddb.send(new UpdateCommand({
                 TableName: ORDERS_TABLE,
