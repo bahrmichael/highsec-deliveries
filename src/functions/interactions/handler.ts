@@ -391,19 +391,22 @@ const handler = async (event: any) => {
                 })
             }
 
+            const agentId = data.member.user.id;
+
             await ddb.send(new UpdateCommand({
                 TableName: ORDERS_TABLE,
                 Key: {pk: orderId},
-                UpdateExpression: 'set orderStatus = :o',
+                UpdateExpression: 'set orderStatus = :o, assignedAgent = :a',
                 ExpressionAttributeValues: {
-                    ':o': 'CLAIMED'
+                    ':o': 'CLAIMED',
+                    ':a': agentId,
                 }
             }));
 
             return formatJSONResponse({
                 type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
                 data: {
-                    content: `The order has been claimed.`,
+                    content: `<@${agentId}> has claimed the order.`,
                 }
             })
         } else {
