@@ -394,9 +394,10 @@ const handler = async (event: any) => {
             await ddb.send(new UpdateCommand({
                 TableName: USERS_TABLE,
                 Key: { pk: `discord#${discordId}`, sk: 'balance' },
-                UpdateExpression: 'set balance = balance - :a',
+                UpdateExpression: 'set reserved = if_not_exists(reserved, :b) + :a',
                 ExpressionAttributeValues: {
                     ':a': totalCost,
+                    ':b': 0,
                 }
             }));
 
