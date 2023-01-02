@@ -239,7 +239,7 @@ const handler = async (event: any) => {
             if (balanceRecord.reserved > 0) {
                 const available = new Intl.NumberFormat('en-US').format(balanceRecord.balance);
                 const reserved = new Intl.NumberFormat('en-US').format(balanceRecord.reserved);
-                summary = `You have ${available} ISK available. ${reserved} is reserved by pending orders. Use the command \`/orders\` to show your orders.`
+                summary = `You have ${available} ISK available. ${reserved} is reserved by pending orders. Use the command \`/list-orders\` to show your orders.`
             } else {
                 const available = new Intl.NumberFormat('en-US').format(balanceRecord.balance);
                 summary = `You have ${available} ISK available.`
@@ -394,7 +394,7 @@ const handler = async (event: any) => {
             await ddb.send(new UpdateCommand({
                 TableName: USERS_TABLE,
                 Key: { pk: `discord#${discordId}`, sk: 'balance' },
-                UpdateExpression: 'set reserved = if_not_exists(reserved, :b) + :a',
+                UpdateExpression: 'set reserved = if_not_exists(reserved, :b) + :a, balance = balance - :a',
                 ExpressionAttributeValues: {
                     ':a': totalCost,
                     ':b': 0,
