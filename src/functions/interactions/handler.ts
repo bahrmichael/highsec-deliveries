@@ -335,22 +335,22 @@ const handler = async (event: any) => {
                     throw Error(`Insufficient balance. Please link EVE characters with \`/signin\` and then transfer ISK from them to \`Highsec Deliveries\` to top up your balance. It may take up to 60 minutes for the balance to update. You can use \`/balance\` to check your current balance.`)
                 }
 
-                const result = await getOrderValues(components);
+                const {destination, janiceResult} = await getOrderValues(components);
 
                 let systemName;
                 try {
                     const esiClient = getEsiClient();
-                    const stationInfo = (await esiClient.get(`/v2/universe/stations/${result.destination.id}`)).data;
+                    const stationInfo = (await esiClient.get(`/v2/universe/stations/${destination.id}`)).data;
                     const {system_id} = stationInfo;
                     const systemInfo = (await esiClient.get(`/v4/universe/systems/${system_id}`)).data;
                     systemName = systemInfo.name;
                 } catch (e) {
                     console.error(e);
-                    throw Error(`Failed to resolve system name. Please try again.`);
+                    throw Error(`Failed to resolve station or system. Please make sure the name is correct and try again.`);
                 }
 
-                const volume = result.janiceResult.totalVolume;
-                const itemsValue = result.janiceResult.immediatePrices.totalSellPrice;
+                const volume = janiceResult.totalVolume;
+                const itemsValue = janiceResult.immediatePrices.totalSellPrice;
 
                 let shippingFee;
                 try {
@@ -362,7 +362,7 @@ const handler = async (event: any) => {
                 }
 
                 let summary = 'Here\'s a summary of your order. Please review it carefully before choosing to confirm or cancel it.\n';
-                summary += `Items: ${new Intl.NumberFormat('en-US').format(itemsValue)} ISK (https://janice.e-351.com/a/${result.janiceResult.code})\n`
+                summary += `Items: ${new Intl.NumberFormat('en-US').format(itemsValue)} ISK (https://janice.e-351.com/a/${janiceResult.code})\n`
                 summary += `Shipping to ${systemName}: ${new Intl.NumberFormat('en-US').format(shippingFee)} ISK\n`
 
                 return formatJSONResponse({
@@ -449,7 +449,7 @@ async function getOrderValues(components: any[]): Promise<{janiceResult: any, de
     const destinationValue = components.flatMap((c) => c.components).find((c) => c.custom_id === 'destination')?.value;
     let destinationResult;
     try {
-        destinationResult = (await getEsiClient().post(`/v1/universe/ids/?datasource=tranquility`, [destinationValue])).data;
+        destinationResult = (await getEsiClient().post(`/v1/universe/ids/?datasource=tranquility`, [destinationValue.trim()])).data;
     } catch (e) {
         console.error(e);
         throw Error(`Failed to check the destination. Please try again.`);
