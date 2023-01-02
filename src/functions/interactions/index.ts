@@ -28,7 +28,7 @@ export default {
     Resource: {'Fn::GetAtt': ['LoginStateTable', 'Arn']},
   }, {
     Effect: 'Allow',
-    Action: ['dynamodb:PutItem', 'dynamodb:GetItem'],
+    Action: ['dynamodb:PutItem', 'dynamodb:GetItem', 'dynamodb:UpdateItem', 'dynamodb:DeleteItem'],
     Resource: {'Fn::GetAtt': ['OrdersTable', 'Arn']},
   }, {
     Effect: 'Allow',

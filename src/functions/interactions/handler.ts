@@ -3,13 +3,23 @@ import {middyfy} from '@libs/lambda';
 import {verifyKey, InteractionType, InteractionResponseType} from 'discord-interactions';
 import {ulid} from "ulid";
 import {ddb} from "@libs/ddb-client";
-import {GetCommand, PutCommand, QueryCommand} from '@aws-sdk/lib-dynamodb';
+import {DeleteCommand, GetCommand, PutCommand, QueryCommand, UpdateCommand} from '@aws-sdk/lib-dynamodb';
 import axios from "axios";
 import {GetSecretValueCommand, SecretsManagerClient} from "@aws-sdk/client-secrets-manager";
 
 const ssm = new SecretsManagerClient({});
 
-const {PUBLIC_KEY, LOGIN_STATE_TABLE, USERS_TABLE, ESI_CLIENT_ID, API_ID, VERSION, ORDERS_TABLE, AGENT_WEBHOOK_ID, AGENT_WEBHOOK_TOKEN} = process.env;
+const {
+    PUBLIC_KEY,
+    LOGIN_STATE_TABLE,
+    USERS_TABLE,
+    ESI_CLIENT_ID,
+    API_ID,
+    VERSION,
+    ORDERS_TABLE,
+    AGENT_WEBHOOK_ID,
+    AGENT_WEBHOOK_TOKEN
+} = process.env;
 
 async function getJaniceSecret(): Promise<string> {
     const secretResponse = await ssm.send(new GetSecretValueCommand({SecretId: 'highsec_deliveries'}))
@@ -302,9 +312,18 @@ const handler = async (event: any) => {
                 })
             }
 
+            await ddb.send(new UpdateCommand({
+                TableName: ORDERS_TABLE,
+                Key: {pk: orderId},
+                UpdateExpression: 'set orderStatus = :o',
+                ExpressionAttributeValues: {
+                    ':o': 'CONFIRMED'
+                }
+            }));
+
             const discord = await getDiscordWebhookAgentsClient();
             await discord.post(``, {
-                content: `A new order is waiting!\nhttps://janice.e-351.com/a/${order.appraisalCode}\n${order.destinationName}`,
+                content: `:truck: A new order is waiting!\n\nAppraisal: https://janice.e-351.com/a/${order.appraisalCode}\nDestination: ${order.destinationName}\n\n:moneybag: Reward: ${new Intl.NumberFormat('en-US').format(order.shippingFee)}`,
                 components: [
                     {
                         type: 1,
@@ -329,6 +348,13 @@ const handler = async (event: any) => {
                 }
             })
         } else if (customId.startsWith('cancel_order')) {
+            const orderId = customId.split('#')[1];
+
+            await ddb.send(new DeleteCommand({
+                TableName: ORDERS_TABLE,
+                Key: {pk: orderId},
+            }));
+
             // todo: remove the previous message, or disable its buttons
             return formatJSONResponse({
                 type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
@@ -336,6 +362,38 @@ const handler = async (event: any) => {
                     content: `Your order has been cancelled.`,
                     // Make the response visible to only the user running the command
                     flags: 64,
+                }
+            })
+        } else if (customId.startsWith('take_order')) {
+
+            const orderId = customId.split('#')[1];
+            const order = (await ddb.send(new GetCommand({
+                TableName: ORDERS_TABLE,
+                Key: {pk: orderId}
+            }))).Item;
+
+            if (!order) {
+                return formatJSONResponse({
+                    type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                    data: {
+                        content: `We couldn't find the order anymore. The customer has probably cancelled the order since the bot posted it here.`,
+                    }
+                })
+            }
+
+            await ddb.send(new UpdateCommand({
+                TableName: ORDERS_TABLE,
+                Key: {pk: orderId},
+                UpdateExpression: 'set orderStatus = :o',
+                ExpressionAttributeValues: {
+                    ':o': 'CLAIMED'
+                }
+            }));
+
+            return formatJSONResponse({
+                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                data: {
+                    content: `The order has been claimed.`,
                 }
             })
         } else {
@@ -498,7 +556,7 @@ const handler = async (event: any) => {
     }
 };
 
-async function getOrderValues(components: any[]): Promise<{janiceResult: any, destination: { name: string, id: number }}> {
+async function getOrderValues(components: any[]): Promise<{ janiceResult: any, destination: { name: string, id: number } }> {
     const janiceLink = components.flatMap((c) => c.components).find((c) => c.custom_id === 'appraisal_link')?.value;
     console.log({janiceLink})
     const appraisalCode = extractId(janiceLink);
