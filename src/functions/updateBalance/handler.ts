@@ -9,7 +9,6 @@ const {USERS_TABLE, CORPORATION_ID} = process.env;
 export const main = async (event: DynamoDBStreamEvent) => {
     const newTransactions: any[] = []
     for (const record of event.Records.map(({dynamodb}) => dynamodb).filter((r) => r.NewImage)) {
-        console.log({record})
         newTransactions.push(unmarshall(record.NewImage as Record<string, AttributeValue>))
     }
 
@@ -53,5 +52,7 @@ export const main = async (event: DynamoDBStreamEvent) => {
                 ':b': 0,
             }
         }));
+
+        console.log(`Updated balance for Discord ${characterRecord.discordId} by ${amount}`);
     }
 };
