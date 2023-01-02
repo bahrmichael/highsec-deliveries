@@ -370,7 +370,14 @@ const handler = async (event: any) => {
                     Key: {pk: `discord#${discordId}`, sk: 'balance'}
                 }))).Item;
                 if (!(balanceRecord?.available > 0)) {
-                    throw Error(`Insufficient balance. Please link EVE characters with \`/signin\` and then transfer ISK from them to \`Highsec Deliveries\` to top up your balance. It may take up to 60 minutes for the balance to update. You can use \`/balance\` to check your current balance.`)
+                    return formatJSONResponse({
+                        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                        data: {
+                            content: `Insufficient balance. Please link EVE characters with \`/signin\` and then transfer ISK from them to \`Highsec Deliveries\` to top up your balance. It may take up to 60 minutes for the balance to update. You can use \`/balance\` to check your current balance.`,
+                            // Make the response visible to only the user running the command
+                            flags: 64,
+                        }
+                    })
                 }
 
                 const {destination, janiceResult} = await getOrderValues(components);
