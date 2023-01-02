@@ -313,7 +313,7 @@ const handler = async (event: any) => {
 
             const ordersText = orders.map((order) => {
                 if (['CONFIRMED', 'CLAIMED'].includes(order.orderStatus)) {
-                    return `#${order.pk} for ${order.recipient} in ${order.destinationName}\n`
+                    return `#${order.pk} for ${order.recipient} in ${order.destinationName}`
                 } else {
                     return null;
                 }
