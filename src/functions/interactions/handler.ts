@@ -201,6 +201,18 @@ const handler = async (event: any) => {
                             placeholder: "Jita IV - Moon 4 - Caldari Navy Assembly Plant",
                             required: true
                         }]
+                    }, {
+                        type: 1,
+                        components: [{
+                            type: 4,
+                            custom_id: "recipient",
+                            label: "Recipient (character or corporation)",
+                            style: 1,
+                            min_length: 1,
+                            max_length: 300,
+                            placeholder: "Your character's or corporation's name",
+                            required: true
+                        }]
                     }]
                 }
             })
@@ -446,7 +458,7 @@ const handler = async (event: any) => {
                     })
                 }
 
-                const {destination, janiceResult} = await getOrderValues(components);
+                const {destination, janiceResult, recipient} = await getOrderValues(components);
 
                 let systemName;
                 try {
@@ -505,6 +517,8 @@ const handler = async (event: any) => {
                         orderStatus: 'PENDING',
                         shippingFee,
                         serviceFee,
+                        orderOwner: discordId,
+                        recipient,
                     }
                 }))
 
@@ -569,7 +583,7 @@ const handler = async (event: any) => {
     }
 };
 
-async function getOrderValues(components: any[]): Promise<{ janiceResult: any, destination: { name: string, id: number } }> {
+async function getOrderValues(components: any[]): Promise<{ janiceResult: any, destination: { name: string, id: number }, recipient: string }> {
     const janiceLink = components.flatMap((c) => c.components).find((c) => c.custom_id === 'appraisal_link')?.value;
     console.log({janiceLink})
     const appraisalCode = extractId(janiceLink);
@@ -603,7 +617,9 @@ async function getOrderValues(components: any[]): Promise<{ janiceResult: any, d
     }
     const destination = destinationResult.stations[0];
 
-    return {destination, janiceResult}
+    const recipient = components.flatMap((c) => c.components).find((c) => c.custom_id === 'recipient')?.value;
+
+    return {destination, janiceResult, recipient}
 }
 
 function extractId(url: string | undefined): string | null {
