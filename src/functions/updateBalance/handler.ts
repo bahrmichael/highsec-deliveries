@@ -21,6 +21,10 @@ export const main = async (event: DynamoDBStreamEvent) => {
             continue;
         }
         if (t.ref_type) {
+            if (t.first_party_id === +CORPORATION_ID && t.second_party_id === +CORPORATION_ID) {
+                console.log('Skipping internal transfer.');
+                continue;
+            }
             const sign = t.first_party_id === +CORPORATION_ID ? -1 : 1;
             const characterId = t.first_party_id === +CORPORATION_ID ? t.second_party_id : t.first_party_id;
             deltaPerCharacter.set(characterId, (deltaPerCharacter.get(characterId) ?? 0) + (sign * t.amount));
@@ -30,18 +34,23 @@ export const main = async (event: DynamoDBStreamEvent) => {
     }
 
     for (const [characterId, amount] of deltaPerCharacter.entries()) {
-        const {discordId} = (await ddb.send(new GetCommand({
+        const characterRecord = (await ddb.send(new GetCommand({
             TableName: USERS_TABLE,
             Key: { pk: `eve#${characterId}`, sk: 'discord' }
         }))).Item;
 
+        if (!characterRecord) {
+            console.log(`Owner ${characterId} is not connected to any Discord user.`);
+            continue;
+        }
+
         await ddb.send(new UpdateCommand({
             TableName: USERS_TABLE,
-            Key: { pk: `discord#${discordId}`, sk: 'balance' },
+            Key: { pk: `discord#${characterRecord.discordId}`, sk: 'balance' },
             UpdateExpression: 'set balance = balance + :a',
             ExpressionAttributeValues: {
                 ':a': amount,
             }
-        }))
+        }));
     }
 };
