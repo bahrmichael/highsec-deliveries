@@ -14,4 +14,8 @@ export const commands = [{
     name: 'list-characters',
     type: 1,
     description: 'Tell me which characters I have verified here.'
+}, {
+    name: 'balance',
+    type: 1,
+    description: 'Show the balance of your Highsec Deliveries wallet.'
 }]
