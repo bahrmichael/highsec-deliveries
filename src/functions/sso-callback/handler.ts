@@ -57,6 +57,7 @@ const hello = async (event: APIGatewayProxyEvent) => {
             pk: `discord#${discordId}`,
             sk: `eve#${data.characterId}`,
             characterName: data.name,
+            characterId: data.characterId,
         }
     }))
     await ddb.send(new PutCommand({
@@ -65,6 +66,7 @@ const hello = async (event: APIGatewayProxyEvent) => {
             pk: `eve#${data.characterId}`,
             sk: 'discord',
             characterName: data.name,
+            characterId: data.characterId,
             discordId,
         }
     }))
