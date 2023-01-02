@@ -287,6 +287,46 @@ const handler = async (event: any) => {
                     flags: 64,
                 }
             })
+        } else if (command === 'list-orders') {
+
+            const discordId = data.member.user.id;
+
+            const orders = (await ddb.send(new QueryCommand({
+                TableName: ORDERS_TABLE,
+                IndexName: 'orderOwner',
+                KeyConditionExpression: 'orderOwner = :o',
+                ExpressionAttributeValues: {
+                    ':o': discordId,
+                }
+            }))).Items;
+
+            if (!orders.length) {
+                return formatJSONResponse({
+                    type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                    data: {
+                        content: `You have no pending orders.`,
+                        // Make the response visible to only the user running the command
+                        flags: 64,
+                    }
+                })
+            }
+
+            const ordersText = orders.map((order) => {
+                if (['CONFIRMED', 'CLAIMED'].includes(order.orderStatus)) {
+                    return `#${order.pk} for ${order.recipient} in ${order.destinationName}\n`
+                } else {
+                    return null;
+                }
+            }).filter((x) => x).join('\n');
+
+            return formatJSONResponse({
+                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                data: {
+                    content: `You have verified the following characters:\n\n${ordersText}`,
+                    // Make the response visible to only the user running the command
+                    flags: 64,
+                }
+            })
         } else {
             return formatJSONResponse({
                 type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,

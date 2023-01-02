@@ -1,11 +1,15 @@
 export const commands = [{
-    name: "signin",
+    name: 'signin',
     type: 1,
-    description: "Sign in with EVE Online",
+    description: 'Sign in with EVE Online',
 }, {
-    name: "order",
+    name: 'order',
     type: 1,
-    description: "Place an order",
+    description: 'Place an order',
+}, {
+    name: 'list-orders',
+    type: 1,
+    description: 'List my pending orders',
 }, {
     name: 'list-characters',
     type: 1,

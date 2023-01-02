@@ -32,6 +32,10 @@ export default {
     Resource: {'Fn::GetAtt': ['OrdersTable', 'Arn']},
   }, {
     Effect: 'Allow',
+    Action: ['dynamodb:Query'],
+    Resource: {'Fn::Join': [ '/', [{ 'Fn::GetAtt': ['OrdersTable', 'Arn' ] }, 'index', 'orderOwner' ]]}
+  }, {
+    Effect: 'Allow',
     Action: ['dynamodb:Query', 'dynamodb:GetItem'],
     Resource: {'Fn::GetAtt': ['UsersTable', 'Arn']},
   }, {

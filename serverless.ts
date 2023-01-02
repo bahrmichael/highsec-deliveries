@@ -52,8 +52,24 @@ const serverlessConfiguration: AWS = {
             AttributeName: 'pk',
             KeyType: 'HASH'
           }],
+          GlobalSecondaryIndexes: [{
+            IndexName: 'orderOwner',
+            KeySchema: [{
+              AttributeName: 'orderOwner',
+              KeyType: 'HASH'
+            }, {
+              AttributeName: 'pk',
+              KeyType: 'RANGE'
+            }],
+            Projection: {
+              ProjectionType: 'ALL'
+            }
+          }],
           AttributeDefinitions: [{
             AttributeName: 'pk',
+            AttributeType: 'S',
+          }, {
+            AttributeName: 'orderOwner',
             AttributeType: 'S',
           }],
         }
