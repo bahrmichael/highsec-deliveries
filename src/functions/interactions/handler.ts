@@ -352,9 +352,14 @@ const handler = async (event: any) => {
                 }
             }));
 
+            let agentMessage = ':truck: A new order is waiting!\n\n';
+            agentMessage += `Appraisal: https://janice.e-351.com/a/${order.appraisalCode}\n`;
+            agentMessage += `Destination: ${order.destinationName}\n`;
+            agentMessage += `Items Value: ${new Intl.NumberFormat('en-US').format(order.itemsValue)}\n\n`;
+            agentMessage += `:moneybag: Reward: ${new Intl.NumberFormat('en-US').format(order.shippingFee)}`;
             const discord = await getDiscordWebhookAgentsClient();
             await discord.post(``, {
-                content: `:truck: A new order is waiting!\n\nAppraisal: https://janice.e-351.com/a/${order.appraisalCode}\nDestination: ${order.destinationName}\n\n:moneybag: Reward: ${new Intl.NumberFormat('en-US').format(order.shippingFee)}`,
+                content: agentMessage,
                 components: [
                     {
                         type: 1,
