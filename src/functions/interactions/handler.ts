@@ -391,7 +391,14 @@ const handler = async (event: any) => {
                     systemName = systemInfo.name;
                 } catch (e) {
                     console.error(e);
-                    throw Error(`Failed to resolve station or system. Please make sure the name is correct and try again.`);
+                    return formatJSONResponse({
+                        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                        data: {
+                            content: `Failed to resolve station or system. Please make sure the name is correct and try again.`,
+                            // Make the response visible to only the user running the command
+                            flags: 64,
+                        }
+                    })
                 }
 
                 const volume = janiceResult.totalVolume;
@@ -403,7 +410,14 @@ const handler = async (event: any) => {
                     shippingFee = shippingResult.PriceNormal;
                 } catch (e) {
                     console.error(e);
-                    throw Error(`Failed to calculate the shipping fee. Please try again.`);
+                    return formatJSONResponse({
+                        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                        data: {
+                            content: `Failed to calculate the shipping fee. Please try again.`,
+                            // Make the response visible to only the user running the command
+                            flags: 64,
+                        }
+                    })
                 }
 
                 let summary = 'Here\'s a summary of your order. Please review it carefully before choosing to confirm or cancel it.\n';
