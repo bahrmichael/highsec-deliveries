@@ -369,7 +369,7 @@ const handler = async (event: any) => {
                     TableName: USERS_TABLE,
                     Key: {pk: `discord#${discordId}`, sk: 'balance'}
                 }))).Item;
-                if (!(balanceRecord?.available > 0)) {
+                if (!(balanceRecord?.balance > 0)) {
                     return formatJSONResponse({
                         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
                         data: {
