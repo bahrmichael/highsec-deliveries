@@ -51,9 +51,9 @@ export const main = async () => {
     const esiClient = getEsiClient(accessToken);
 
     const journalPromises: Promise<any>[] = [];
-    for (let division = 1; division < 7; division++) {
-        journalPromises.push(esiClient.get(`/corporations/${CORPORATION_ID}/wallets/${division}/journal`));
-    }
+    // for (let division = 1; division < 7; division++) {
+    journalPromises.push(esiClient.get(`/corporations/${CORPORATION_ID}/wallets/${1}/journal`));
+    // }
     const journalRecords: any[] = (await Promise.all(journalPromises)).map((res) => res.data).flatMap((x) => x);
     // The log below should show us if the flatMap worked as expected
     console.log({journalRecords: journalRecords.length})
