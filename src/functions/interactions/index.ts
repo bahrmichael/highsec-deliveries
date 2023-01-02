@@ -7,7 +7,9 @@ export default {
     APPLICATION_ID: '1056632427054907392',
     LOGIN_STATE_TABLE: {Ref: 'LoginStateTable'},
     USERS_TABLE: {Ref: 'UsersTable'},
-    ESI_CLIENT_ID: 'abce3c6539794647a0a31aa4492a7cb4'
+    ESI_CLIENT_ID: 'abce3c6539794647a0a31aa4492a7cb4',
+    VERSION: '${self:provider.stage}',
+    API_ID: {Ref: 'ApiGatewayRestApi'},
   },
   events: [
     {

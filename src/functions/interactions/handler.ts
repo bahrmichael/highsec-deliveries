@@ -9,7 +9,7 @@ import {GetSecretValueCommand, SecretsManagerClient} from "@aws-sdk/client-secre
 
 const ssm = new SecretsManagerClient({});
 
-const {PUBLIC_KEY, LOGIN_STATE_TABLE, USERS_TABLE, ESI_CLIENT_ID} = process.env;
+const {PUBLIC_KEY, LOGIN_STATE_TABLE, USERS_TABLE, ESI_CLIENT_ID, API_ID, VERSION} = process.env;
 
 async function getJaniceSecret(): Promise<string> {
     const secretResponse = await ssm.send(new GetSecretValueCommand({SecretId: 'highsec_deliveries'}))
@@ -112,7 +112,7 @@ const handler = async (event: any) => {
                 }
             }))
 
-            const callbackUrl = `https://s1tjfi32bi.execute-api.us-east-1.amazonaws.com/20221227/sso-callback`;
+            const callbackUrl = `https://${API_ID}.execute-api.us-east-1.amazonaws.com/${VERSION}/sso-callback`;
             const signinUrl = `https://login.eveonline.com/v2/oauth/authorize/?response_type=code&redirect_uri=${encodeURIComponent(callbackUrl)}&client_id=${ESI_CLIENT_ID}&state=${state}`;
 
             return formatJSONResponse({
