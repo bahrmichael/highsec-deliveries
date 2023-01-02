@@ -5,7 +5,8 @@ export default {
   environment: {
     PUBLIC_KEY: '1f5a8789b7ac8c09dec2551c29bc088b747d7243f730117a838e419dbf1e5384',
     APPLICATION_ID: '1056632427054907392',
-    VERSION: '${self:provider.stage}'
+    VERSION: '${self:provider.stage}',
+    AGENTS_CHANNEL_ID: '1059562759601262593'
   },
   iamRoleStatements: [
     {

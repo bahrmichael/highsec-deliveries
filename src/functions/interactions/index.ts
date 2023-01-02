@@ -11,6 +11,8 @@ export default {
     ESI_CLIENT_ID: 'abce3c6539794647a0a31aa4492a7cb4',
     VERSION: '${self:provider.stage}',
     API_ID: {Ref: 'ApiGatewayRestApi'},
+    AGENT_WEBHOOK_ID: {'Fn::GetAtt': ['DiscordCommandsResource', 'AgentWebhookId' ]},
+    AGENT_WEBHOOK_TOKEN: {'Fn::GetAtt': ['DiscordCommandsResource', 'AgentWebhookToken' ]},
   },
   events: [
     {

@@ -9,7 +9,7 @@ import {GetSecretValueCommand, SecretsManagerClient} from "@aws-sdk/client-secre
 
 const ssm = new SecretsManagerClient({});
 
-const {PUBLIC_KEY, LOGIN_STATE_TABLE, USERS_TABLE, ESI_CLIENT_ID, API_ID, VERSION, ORDERS_TABLE} = process.env;
+const {PUBLIC_KEY, LOGIN_STATE_TABLE, USERS_TABLE, ESI_CLIENT_ID, API_ID, VERSION, ORDERS_TABLE, AGENT_WEBHOOK_ID, AGENT_WEBHOOK_TOKEN} = process.env;
 
 async function getJaniceSecret(): Promise<string> {
     const secretResponse = await ssm.send(new GetSecretValueCommand({SecretId: 'highsec_deliveries'}))
@@ -44,14 +44,9 @@ function getPushxClient() {
     })
 }
 
-async function getDiscordAgentsWebhook() {
-    const secretResponse = await ssm.send(new GetSecretValueCommand({SecretId: 'highsec_deliveries'}))
-    return JSON.parse(secretResponse.SecretString).agents_webhook;
-}
-
 async function getDiscordWebhookAgentsClient() {
     return axios.create({
-        baseURL: await getDiscordAgentsWebhook(),
+        baseURL: `https://discord.com/api/v10/webhooks/${AGENT_WEBHOOK_ID}/${AGENT_WEBHOOK_TOKEN}`,
         headers: {
             'Accept-Encoding': 'gzip,deflate,compress'
         }
