@@ -420,9 +420,10 @@ const handler = async (event: any) => {
                     })
                 }
 
-                let summary = 'Here\'s a summary of your order. Please review it carefully before choosing to confirm or cancel it.\n';
+                let summary = 'Here\'s a summary of your order. Please review it carefully before choosing to confirm or cancel it.\n\n';
                 summary += `Items: ${new Intl.NumberFormat('en-US').format(itemsValue)} ISK (https://janice.e-351.com/a/${janiceResult.code})\n`
-                summary += `Shipping to ${systemName}: ${new Intl.NumberFormat('en-US').format(shippingFee)} ISK\n`
+                summary += `Shipping to ${systemName}: ${new Intl.NumberFormat('en-US').format(shippingFee)} ISK\n\n`
+                summary += `:moneybag: Total: ${new Intl.NumberFormat('en-US').format(shippingFee + itemsValue)}`
 
                 const orderId = ulid();
                 await ddb.send(new PutCommand({
@@ -430,10 +431,11 @@ const handler = async (event: any) => {
                     Item: {
                         pk: orderId,
                         appraisalCode: janiceResult.code,
-                        itemsValue: itemsValue,
+                        itemsValue,
                         destinationName: destination.name,
                         destinationId: destination.id,
-                        orderStatus: 'PENDING'
+                        orderStatus: 'PENDING',
+                        shippingFee,
                     }
                 }))
 
