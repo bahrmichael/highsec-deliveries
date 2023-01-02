@@ -57,7 +57,7 @@ const serverlessConfiguration: AWS = {
             AttributeType: 'S',
           }],
           StreamSpecification: {
-            StreamViewType: 'NEW_AND_OLD_IMAGE'
+            StreamViewType: 'NEW_AND_OLD_IMAGES'
           },
         }
       },
