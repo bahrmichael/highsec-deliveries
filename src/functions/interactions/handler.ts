@@ -215,10 +215,10 @@ const handler = async (event: any) => {
             if (balanceRecord.reserved > 0) {
                 const available = new Intl.NumberFormat('en-US').format(balanceRecord.balance);
                 const reserved = new Intl.NumberFormat('en-US').format(balanceRecord.reserved);
-                summary = `You have ${available} ISk available. ${reserved} is reserved by pending orders. Use the command \`/orders\` to show your orders.`
+                summary = `You have ${available} ISK available. ${reserved} is reserved by pending orders. Use the command \`/orders\` to show your orders.`
             } else {
                 const available = new Intl.NumberFormat('en-US').format(balanceRecord.balance);
-                summary = `You have ${available} ISk available.`
+                summary = `You have ${available} ISK available.`
             }
 
             return formatJSONResponse({
