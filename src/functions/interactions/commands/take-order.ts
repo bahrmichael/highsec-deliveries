@@ -1,8 +1,18 @@
 import {ddb} from "@libs/ddb-client";
 import {GetCommand, UpdateCommand} from "@aws-sdk/lib-dynamodb";
 import {InteractionResponseType} from "discord-interactions";
+import axios from "axios";
 
-const {ORDERS_TABLE} = process.env;
+const {ORDERS_TABLE, APPLICATION_ID} = process.env;
+
+function getDiscordClient() {
+    return axios.create({
+        baseURL: `https://discord.com/api/v10`,
+        headers: {
+            'Accept-Encoding': 'gzip,deflate,compress'
+        }
+    })
+}
 
 export async function takeOrder(data: any): Promise<Record<string, unknown>> {
 
@@ -39,17 +49,23 @@ export async function takeOrder(data: any): Promise<Record<string, unknown>> {
     await ddb.send(new UpdateCommand({
         TableName: ORDERS_TABLE,
         Key: {pk: orderId},
-        UpdateExpression: 'set orderStatus = :o, assignedAgent = :a',
+        UpdateExpression: 'set orderStatus = :o, assignedAgent = :a remove interactionTokenAfterTake',
         ExpressionAttributeValues: {
             ':o': 'CLAIMED',
             ':a': agentId,
         }
     }));
 
+    await getDiscordClient().post(`/webhooks/${APPLICATION_ID}/${order.interactionTokenAfterTake}`, {
+        content: 'An agent has accepted your order.',
+        // Make the response visible to only the user running the command
+        flags: 64,
+    });
+
     return {
         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
         data: {
-            content: `<@${agentId}> has claimed the order.`,
+            content: `<@${agentId}> has accepted the order.`,
         }
     }
 }
