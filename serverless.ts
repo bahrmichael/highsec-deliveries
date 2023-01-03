@@ -83,6 +83,9 @@ const serverlessConfiguration: AWS = {
           }, {
             AttributeName: 'orderOwner',
             AttributeType: 'S',
+          }, {
+            AttributeName: 'assignedAgent',
+            AttributeType: 'S',
           }],
         }
       },
