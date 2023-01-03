@@ -56,27 +56,6 @@ export async function listDeliveries(data: any): Promise<Record<string, unknown>
         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
         data: {
             embeds,
-            "components": [
-                {
-                    "type": 1,
-                    "components": [
-                        {
-                            "style": 3,
-                            "label": `Complete order`,
-                            "custom_id": `row_0_button_0`,
-                            "disabled": false,
-                            "type": 2
-                        },
-                        {
-                            "style": 4,
-                            "label": `Fail order`,
-                            "custom_id": `row_0_button_1`,
-                            "disabled": false,
-                            "type": 2
-                        }
-                    ]
-                }
-            ],
             // Make the response visible to only the user running the command
             flags: 64,
         }
