@@ -7,6 +7,7 @@ export default {
     APPLICATION_ID: '1056632427054907392',
     LOGIN_STATE_TABLE: {Ref: 'LoginStateTable'},
     USERS_TABLE: {Ref: 'UsersTable'},
+    TRANSACTIONS_TABLE: {Ref: 'TransactionsTable'},
     ORDERS_TABLE: {Ref: 'OrdersTable'},
     ESI_CLIENT_ID: 'abce3c6539794647a0a31aa4492a7cb4',
     VERSION: '${self:provider.stage}',
@@ -23,6 +24,10 @@ export default {
     },
   ],
   iamRoleStatements: [{
+    Effect: 'Allow',
+    Action: ['dynamodb:PutItem'],
+    Resource: {'Fn::GetAtt': ['TransactionsTable', 'Arn']},
+  }, {
     Effect: 'Allow',
     Action: ['dynamodb:PutItem'],
     Resource: {'Fn::GetAtt': ['LoginStateTable', 'Arn']},
