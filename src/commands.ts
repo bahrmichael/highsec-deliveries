@@ -15,6 +15,10 @@ export const commands = [{
     type: 1,
     description: 'Tell me which characters I have verified here.',
 }, {
+    name: 'list-deliveries',
+    type: 1,
+    description: 'List my pending delivery jobs',
+}, {
     name: 'balance',
     type: 1,
     description: 'Show the balance of your Highsec Deliveries wallet.',
