@@ -28,18 +28,33 @@ export async function listOrders(data: any): Promise<Record<string, unknown>> {
         }
     }
 
-    const ordersText = orders.map((order) => {
-        if (['CONFIRMED', 'CLAIMED'].includes(order.orderStatus)) {
-            return `#${order.pk} for ${order.recipient} in ${order.destinationName}`
-        } else {
-            return null;
-        }
-    }).filter((x) => x).join('\n');
+    const embeds = [];
+    for (const order of orders) {
+        embeds.push({
+            type: 'rich',
+            title: `Order ${order.pk}`,
+            description: `https://janice.e-351.com/a/${order.appraisalCode}`,
+            color: 0x00FFFF,
+            fields: [{
+                name: `Destination`,
+                value: order.destinationName,
+                inline: true,
+            }, {
+                name: `Recipient`,
+                value: order.recipient,
+                inline: true,
+            }, {
+                name: `Status`,
+                value: order.orderStatus,
+                inline: true,
+            }]
+        })
+    }
 
     return {
         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
         data: {
-            content: `You have verified the following characters:\n\n${ordersText}`,
+            embeds,
             // Make the response visible to only the user running the command
             flags: 64,
         }

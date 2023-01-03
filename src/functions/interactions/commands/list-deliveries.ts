@@ -43,11 +43,11 @@ export async function listDeliveries(data: any): Promise<Record<string, unknown>
                 name: `Recipient`,
                 value: order.recipient,
                 inline: true,
-            }/*, {
-                name: `Delivery Until`,
-                value: order.destinationName,
+            }, {
+                name: `Reward`,
+                value: `${new Intl.NumberFormat('en-US').format(order.shippingFee)} ISK`,
                 inline: true,
-            }*/]
+            }]
         })
     }
 
