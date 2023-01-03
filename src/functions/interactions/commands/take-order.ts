@@ -49,14 +49,14 @@ export async function takeOrder(data: any): Promise<Record<string, unknown>> {
     await ddb.send(new UpdateCommand({
         TableName: ORDERS_TABLE,
         Key: {pk: orderId},
-        UpdateExpression: 'set orderStatus = :o, assignedAgent = :a remove interactionTokenAfterTake',
+        UpdateExpression: 'set orderStatus = :o, assignedAgent = :a',
         ExpressionAttributeValues: {
             ':o': 'CLAIMED',
             ':a': agentId,
         }
     }));
 
-    await getDiscordClient().post(`/webhooks/${APPLICATION_ID}/${order.interactionTokenAfterTake}`, {
+    await getDiscordClient().post(`/webhooks/${APPLICATION_ID}/${order.interactionToken}`, {
         content: 'An agent has accepted your order.',
         // Make the response visible to only the user running the command
         flags: 64,

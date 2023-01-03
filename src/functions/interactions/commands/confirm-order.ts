@@ -60,7 +60,7 @@ export async function confirmOrder(data: any): Promise<Record<string, unknown>> 
     await ddb.send(new UpdateCommand({
         TableName: ORDERS_TABLE,
         Key: {pk: orderId},
-        UpdateExpression: 'set orderStatus = :o, interactionTokenAfterTake = :i',
+        UpdateExpression: 'set orderStatus = :o, interactionToken = :i',
         ExpressionAttributeValues: {
             ':o': 'CONFIRMED',
             ':i': data.token,
