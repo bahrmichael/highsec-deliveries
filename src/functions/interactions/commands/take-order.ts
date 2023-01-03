@@ -16,6 +16,8 @@ function getDiscordClient() {
 
 export async function takeOrder(data: any): Promise<Record<string, unknown>> {
 
+    // todo: don't allow taking more than 10 orders, because we can only embed up to 10 items in a follow up message
+
     const {data: interactionData} = data;
     const {custom_id: customId} = interactionData;
 

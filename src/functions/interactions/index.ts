@@ -38,7 +38,10 @@ export default {
   }, {
     Effect: 'Allow',
     Action: ['dynamodb:Query'],
-    Resource: {'Fn::Join': [ '/', [{ 'Fn::GetAtt': ['OrdersTable', 'Arn' ] }, 'index', 'orderOwner' ]]}
+    Resource: [
+        {'Fn::Join': [ '/', [{ 'Fn::GetAtt': ['OrdersTable', 'Arn' ] }, 'index', 'orderOwner' ]]},
+        {'Fn::Join': [ '/', [{ 'Fn::GetAtt': ['OrdersTable', 'Arn' ] }, 'index', 'assignedAgent' ]]}
+    ]
   }, {
     Effect: 'Allow',
     Action: ['dynamodb:Query', 'dynamodb:GetItem', 'dynamodb:UpdateItem'],

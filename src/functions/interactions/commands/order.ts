@@ -5,6 +5,9 @@ import {InteractionResponseType} from "discord-interactions";
 const { USERS_TABLE } = process.env;
 
 export async function order(data: any): Promise<Record<string, unknown>> {
+
+    // todo: don't allow placing more than 10 orders, because we can only embed up to 10 items in a follow up message
+
     const discordId = data.member.user.id;
     const balanceRecord = (await ddb.send(new GetCommand({
         TableName: USERS_TABLE,

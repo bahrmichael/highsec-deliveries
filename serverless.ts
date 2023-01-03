@@ -64,6 +64,18 @@ const serverlessConfiguration: AWS = {
             Projection: {
               ProjectionType: 'ALL'
             }
+          }, {
+            IndexName: 'assignedAgent',
+            KeySchema: [{
+              AttributeName: 'assignedAgent',
+              KeyType: 'HASH'
+            }, {
+              AttributeName: 'pk',
+              KeyType: 'RANGE'
+            }],
+            Projection: {
+              ProjectionType: 'ALL'
+            }
           }],
           AttributeDefinitions: [{
             AttributeName: 'pk',

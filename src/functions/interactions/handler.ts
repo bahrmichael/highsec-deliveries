@@ -10,6 +10,7 @@ import {confirmOrder} from "./commands/confirm-order";
 import {cancelOrder} from "./commands/cancel-order";
 import {takeOrder} from "./commands/take-order";
 import {orderModal} from "./commands/order-modal";
+import {listDeliveries} from "./commands/list-deliveries";
 
 const {PUBLIC_KEY} = process.env;
 
@@ -70,6 +71,9 @@ const handler = async (event: any) => {
                 break;
             case 'list-orders':
                 res = await listOrders(data);
+                break;
+            case 'list-deliveries':
+                res = await listDeliveries(data);
                 break;
             default:
                 res = {
