@@ -3,7 +3,7 @@ import axios from 'axios';
 import {GetSecretValueCommand, SecretsManagerClient} from "@aws-sdk/client-secrets-manager";
 import {commands} from "../../commands";
 
-const {AGENTS_CHANNEL_ID} = process.env;
+const {AGENTS_CHANNEL_ID, MANAGERS_CHANNEL_ID} = process.env;
 
 const ssm = new SecretsManagerClient({});
 
@@ -27,15 +27,15 @@ async function writeCommands(applicationId: string) {
   await client.put(`/applications/${applicationId}/commands`, commands);
 }
 
-async function addAgentsWebhook(): Promise<{id: string, token: string}> {
+async function addWebhook(name: string, channelId: string): Promise<{id: string, token: string}> {
   const client = await getClient();
-  const webhooks = (await client.get(`/channels/${AGENTS_CHANNEL_ID}/webhooks`)).data;
-  const existingAgentsWebhook = webhooks?.find((webhook) => webhook.name === 'Orders');
-  if (existingAgentsWebhook) {
-    await client.delete(`/webhooks/${existingAgentsWebhook.id}`);
+  const webhooks = (await client.get(`/channels/${channelId}/webhooks`)).data;
+  const existingWebhook = webhooks?.find((webhook) => webhook.name === name);
+  if (existingWebhook) {
+    await client.delete(`/webhooks/${existingWebhook.id}`);
   }
-  const webhookResult = (await client.post(`/channels/${AGENTS_CHANNEL_ID}/webhooks`, {
-    name: 'Orders'
+  const webhookResult = (await client.post(`/channels/${channelId}/webhooks`, {
+    name,
   })).data;
 
   return {id: webhookResult.id, token: webhookResult.token};
@@ -50,12 +50,14 @@ export const main = async (event: CloudFormationCustomResourceEvent, context: an
 
   try {
     let agentsWebhook;
+    let managersWebhook;
     if (Version === '20221227') {
       switch (requestType) {
         case "Create":
         case "Update":
           await writeCommands(ApplicationId);
-          agentsWebhook = await addAgentsWebhook();
+          agentsWebhook = await addWebhook('Orders', AGENTS_CHANNEL_ID);
+          managersWebhook = await addWebhook('Managers', MANAGERS_CHANNEL_ID);
           // break;
           // case "Delete":
           //   await deleteComamnds();
@@ -66,6 +68,10 @@ export const main = async (event: CloudFormationCustomResourceEvent, context: an
     if (agentsWebhook) {
       responseData['AgentWebhookId'] = agentsWebhook.id;
       responseData['AgentWebhookToken'] = agentsWebhook.token;
+    }
+    if (managersWebhook) {
+      responseData['ManagerWebhookId'] = managersWebhook.id;
+      responseData['ManagerWebhookToken'] = managersWebhook.token;
     }
     console.log(responseData);
     await sendResponse(event, context, "SUCCESS", responseData);
