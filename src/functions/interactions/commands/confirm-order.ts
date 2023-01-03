@@ -45,10 +45,12 @@ export async function confirmOrder(data: any): Promise<Record<string, unknown>> 
     }))).Item;
     if (balanceRecord?.balance < totalCost) {
         const delta = new Intl.NumberFormat('en-US').format(totalCost - balanceRecord.balance);
+        const b = new Intl.NumberFormat('en-US').format(balanceRecord.balance);
+        const t = new Intl.NumberFormat('en-US').format(totalCost);
         return {
             type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
             data: {
-                content: `Your wallet lacks ${delta} ISK for this order.\n\nPlease link EVE characters with \`/signin\` and then transfer ISK from them to \`Highsec Deliveries\` to top up your balance. It may take up to 60 minutes for the balance to update. You can use \`/balance\` to check your current balance.`,
+                content: `Your wallet lacks ${delta} ISK for this order. The order requires ${t} ISK, but your wallet only has ${b} ISK.\n\nPlease link EVE characters with \`/signin\` and then transfer ISK from them to \`Highsec Deliveries\` to top up your balance. It may take up to 60 minutes for the balance to update. You can use \`/balance\` to check your current balance.`,
                 // Make the response visible to only the user running the command
                 flags: 64,
             }
