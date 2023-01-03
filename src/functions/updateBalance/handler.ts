@@ -15,27 +15,25 @@ export const main = async (event: DynamoDBStreamEvent) => {
     console.log({newTransactions})
 
     const deltaPerCharacter: Map<number, number> = new Map<number, number>();
-    for (const t of newTransactions) {
-        if (t.pk === 'latest') {
+    for (const t of newTransactions.filter((t) => t.ref_type)) {
+        if (t.first_party_id === +CORPORATION_ID && t.second_party_id === +CORPORATION_ID) {
+            console.log('Skipping internal transfer.');
             continue;
         }
-        if (t.ref_type) {
-            if (t.first_party_id === +CORPORATION_ID && t.second_party_id === +CORPORATION_ID) {
-                console.log('Skipping internal transfer.');
-                continue;
-            }
-            const sign = t.first_party_id === +CORPORATION_ID ? -1 : 1;
-            const characterId = t.first_party_id === +CORPORATION_ID ? t.second_party_id : t.first_party_id;
-            deltaPerCharacter.set(characterId, (deltaPerCharacter.get(characterId) ?? 0) + (sign * t.amount));
-            continue;
-        }
-        console.log('Unhandled transaction', t);
+        const sign = t.first_party_id === +CORPORATION_ID ? -1 : 1;
+        const characterId = t.first_party_id === +CORPORATION_ID ? t.second_party_id : t.first_party_id;
+        deltaPerCharacter.set(characterId, (deltaPerCharacter.get(characterId) ?? 0) + (sign * t.amount));
+    }
+
+    const deltaPerDiscordId: Map<string, number> = new Map<string, number>();
+    for (const t of newTransactions.filter((t) => t.isInternalTransaction)) {
+        deltaPerDiscordId.set(t.discordId, (deltaPerDiscordId.get(t.discordId) ?? 0) + t.amount);
     }
 
     for (const [characterId, amount] of deltaPerCharacter.entries()) {
         const characterRecord = (await ddb.send(new GetCommand({
             TableName: USERS_TABLE,
-            Key: { pk: `eve#${characterId}`, sk: 'discord' }
+            Key: {pk: `eve#${characterId}`, sk: 'discord'}
         }))).Item;
 
         if (!characterRecord) {
@@ -43,9 +41,13 @@ export const main = async (event: DynamoDBStreamEvent) => {
             continue;
         }
 
+        deltaPerDiscordId.set(characterRecord.discordId, (deltaPerDiscordId.get(characterRecord.discordId) ?? 0) + amount);
+    }
+
+    for (const [discordId, amount] of deltaPerDiscordId.entries()) {
         await ddb.send(new UpdateCommand({
             TableName: USERS_TABLE,
-            Key: { pk: `discord#${characterRecord.discordId}`, sk: 'balance' },
+            Key: { pk: `discord#${discordId}`, sk: 'balance' },
             UpdateExpression: 'set balance = if_not_exists(balance, :b) + :a',
             ExpressionAttributeValues: {
                 ':a': amount,
@@ -53,6 +55,6 @@ export const main = async (event: DynamoDBStreamEvent) => {
             }
         }));
 
-        console.log(`Updated balance for Discord ${characterRecord.discordId} by ${amount}`);
+        console.log(`Updated balance for Discord ${discordId} by ${amount}`);
     }
 };
