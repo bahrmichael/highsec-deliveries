@@ -85,6 +85,17 @@ export async function orderModal(data: any): Promise<Record<string, unknown>> {
 
         const volume = janiceResult.totalVolume;
         const itemsValue = janiceResult.immediatePrices.totalSellPrice;
+        if (itemsValue < 100_000_000) {
+            return {
+                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                data: {
+                    content: `Your order must be at least 100m ISK worth.`,
+                    // Make the response visible to only the user running the command
+                    flags: 64,
+                }
+            };
+        }
+
         if (volume > 1_126_500 && itemsValue > 3_000_000_000) {
             return {
                 type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
