@@ -99,6 +99,30 @@ export async function confirmOrder(data: any): Promise<Record<string, unknown>> 
             }
         ]
     });
+
+    const updateResponse = await discord.patch(`/messages/${data.message.id}`, {
+        components: [
+            {
+                type: 1,
+                components: [
+                    {
+                        type: 2,
+                        label: "Confirm",
+                        style: 3,
+                        disabled: true,
+                    },
+                    {
+                        type: 2,
+                        label: "Cancel",
+                        style: 4,
+                        disabled: true,
+                    },
+                ]
+            }
+        ]
+    });
+    console.log(updateResponse.data);
+
     // todo: remove the previous message, or disable its buttons
     return {
         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
