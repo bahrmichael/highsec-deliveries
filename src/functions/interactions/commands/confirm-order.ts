@@ -100,7 +100,14 @@ export async function confirmOrder(data: any): Promise<Record<string, unknown>> 
         ]
     });
 
-    const updateResponse = await axios.patch(`/messages/${data.message.id}`, {
+    const orderSummaryMessageResponse = await axios.get(`/messages/@original`,{
+        baseURL: `https://discord.com/api/v10/webhooks/${APPLICATION_ID}/${data.token}`,
+        headers: {
+            'Accept-Encoding': 'gzip,deflate,compress'
+        }
+    })
+    console.log(orderSummaryMessageResponse.data);
+    const updateResponse = await axios.patch(`/messages/@original`, {
         components: [
             {
                 type: 1,
