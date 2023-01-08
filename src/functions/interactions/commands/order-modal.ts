@@ -85,6 +85,43 @@ export async function orderModal(data: any): Promise<Record<string, unknown>> {
 
         const volume = janiceResult.totalVolume;
         const itemsValue = janiceResult.immediatePrices.totalSellPrice;
+        if (volume > 1_126_500 && itemsValue > 3_000_000_000) {
+            return {
+                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                data: {
+                    content: `The order must not exceed both 1,126,500m³ and 3b ISK.`,
+                    // Make the response visible to only the user running the command
+                    flags: 64,
+                }
+            }
+        } else if (volume > 360_000 && itemsValue > 50_000_000_000) {
+            return {
+                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                data: {
+                    content: `The order must not exceed both 360,000m³ and 50b ISK.`,
+                    // Make the response visible to only the user running the command
+                    flags: 64,
+                }
+            }
+        } else if (volume > 62_500 && itemsValue > 10_000_000_000) {
+            return {
+                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                data: {
+                    content: `The order must not exceed both 62,500m³ and 10b ISK.`,
+                    // Make the response visible to only the user running the command
+                    flags: 64,
+                }
+            }
+        } else if (volume > 12_500 && itemsValue > 30_000_000_000) {
+            return {
+                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                data: {
+                    content: `The order must not exceed both 12,500m³ and 30b ISK.`,
+                    // Make the response visible to only the user running the command
+                    flags: 64,
+                }
+            }
+        }
 
         let shippingFee;
         try {
