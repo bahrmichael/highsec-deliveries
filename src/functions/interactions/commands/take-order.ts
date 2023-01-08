@@ -80,11 +80,17 @@ export async function takeOrder(data: any): Promise<Record<string, unknown>> {
         }
     }));
 
-    await getDiscordClient().post(`/webhooks/${APPLICATION_ID}/${order.interactionToken}`, {
-        content: `An agent has accepted your order and your order ${orderId} is now in progress.`,
-        // Make the response visible to only the user running the command
-        flags: 64,
-    });
+    try {
+        await getDiscordClient().post(`/webhooks/${APPLICATION_ID}/${order.interactionToken}`, {
+            content: `An agent has accepted your ${orderId} and it is now in progress.`,
+            // Make the response visible to only the user running the command
+            flags: 64,
+        });
+    } catch (e) {
+        // If the order was placed more than 15 minutes ago, then interactionToken expires and can't be used anymore.
+        // We may have to find another way around it, but for now just ignore this error and continue with the process.
+        console.warn(e);
+    }
 
     return {
         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
