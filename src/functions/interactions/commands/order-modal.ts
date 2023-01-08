@@ -106,13 +106,6 @@ export async function orderModal(data: any): Promise<Record<string, unknown>> {
 
         const totalCost = shippingFee + itemsValue + serviceFee;
 
-        let summary = 'Here\'s a summary of your order. Please review it carefully before choosing to confirm or cancel it.\n\n';
-        summary += `Recipient: ${recipient}\n\n`
-        summary += `Items: ${new Intl.NumberFormat('en-US').format(itemsValue)} ISK (https://janice.e-351.com/a/${janiceResult.code})\n`
-        summary += `Shipping to ${systemName}: ${new Intl.NumberFormat('en-US').format(shippingFee)} ISK\n`
-        summary += `Service Fee: ${new Intl.NumberFormat('en-US').format(serviceFee)} ISK\n\n`
-        summary += `:moneybag: Total: ${new Intl.NumberFormat('en-US').format(totalCost)}`
-
         const orderId = ulid();
         await ddb.send(new PutCommand({
             TableName: ORDERS_TABLE,
@@ -133,7 +126,37 @@ export async function orderModal(data: any): Promise<Record<string, unknown>> {
         return {
             type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
             data: {
-                content: summary,
+                content: 'Here\'s a summary of your order. Please review it carefully before confirming it. Otherwise just discard this message.',
+                embeds: [
+                    {
+                        "type": "rich",
+                        "title": `Order ${orderId}`,
+                        "description": `https://janice.e-351.com/a/${janiceResult.code}`,
+                        "color": 0x00FFFF,
+                        "fields": [
+                            {
+                                "name": `Items`,
+                                "value": `${new Intl.NumberFormat('en-US').format(itemsValue)} ISK`
+                            },
+                            {
+                                "name": `Shipping to ${systemName}`,
+                                "value": `${new Intl.NumberFormat('en-US').format(shippingFee)} ISK`
+                            },
+                            {
+                                "name": `Service Fee`,
+                                "value": `${new Intl.NumberFormat('en-US').format(serviceFee)} ISK`
+                            },
+                            {
+                                "name": `Total`,
+                                "value": `${new Intl.NumberFormat('en-US').format(totalCost)} ISK`
+                            },
+                            {
+                                "name": `Recipient`,
+                                "value": `${recipient}`
+                            }
+                        ]
+                    }
+                ],
                 // Make the response visible to only the user running the command
                 flags: 64,
                 components: [
