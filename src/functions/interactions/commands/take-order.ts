@@ -1,5 +1,5 @@
 import {ddb} from "@libs/ddb-client";
-import {GetCommand, UpdateCommand} from "@aws-sdk/lib-dynamodb";
+import {GetCommand, QueryCommand, UpdateCommand} from "@aws-sdk/lib-dynamodb";
 import {InteractionResponseType} from "discord-interactions";
 import axios from "axios";
 
@@ -16,7 +16,27 @@ function getDiscordClient() {
 
 export async function takeOrder(data: any): Promise<Record<string, unknown>> {
 
-    // todo: don't allow taking more than 10 orders, because we can only embed up to 10 items in a follow up message
+    const discordId = data.member.user.id;
+    const openDeliveries = (await ddb.send(new QueryCommand({
+        TableName: ORDERS_TABLE,
+        IndexName: 'assignedAgent',
+        KeyConditionExpression: 'assignedAgent = :o',
+        FilterExpression: 'orderStatus = :s',
+        ExpressionAttributeValues: {
+            ':o': discordId,
+            ':s': 'CLAIMED'
+        }
+    }))).Items;
+    if (openDeliveries.length >= 10) {
+        return {
+            type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+            data: {
+                content: `You have 10 or more open deliveries. Please complete some of them first.`,
+                // Make the response visible to only the user running the command
+                flags: 64,
+            }
+        }
+    }
 
     const {data: interactionData} = data;
     const {custom_id: customId} = interactionData;
@@ -32,6 +52,8 @@ export async function takeOrder(data: any): Promise<Record<string, unknown>> {
             type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
             data: {
                 content: `We couldn't find the order anymore. The customer has probably cancelled the order since the bot posted it here.`,
+                // Make the response visible to only the user running the command
+                flags: 64,
             }
         }
     }
@@ -59,7 +81,7 @@ export async function takeOrder(data: any): Promise<Record<string, unknown>> {
     }));
 
     await getDiscordClient().post(`/webhooks/${APPLICATION_ID}/${order.interactionToken}`, {
-        content: 'An agent has accepted your order.',
+        content: `An agent has accepted your order and your order ${orderId} is now in progress.`,
         // Make the response visible to only the user running the command
         flags: 64,
     });

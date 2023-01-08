@@ -12,8 +12,10 @@ export async function listDeliveries(data: any): Promise<Record<string, unknown>
         TableName: ORDERS_TABLE,
         IndexName: 'assignedAgent',
         KeyConditionExpression: 'assignedAgent = :a',
+        FilterExpression: 'orderStatus = :s',
         ExpressionAttributeValues: {
             ':a': discordId,
+            ':s': 'CLAIMED'
         }
     }))).Items;
 
