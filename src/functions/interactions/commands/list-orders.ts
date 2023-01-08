@@ -29,7 +29,7 @@ export async function listOrders(data: any): Promise<Record<string, unknown>> {
     }
 
     const embeds = [];
-    for (const order of orders) {
+    for (const order of orders.filter((o) => ['CONFIRMED', 'CLAIMED', 'DELIVERED'].includes(o.orderStatus))) {
         embeds.push({
             type: 'rich',
             title: `Order ${order.pk}`,
@@ -45,7 +45,7 @@ export async function listOrders(data: any): Promise<Record<string, unknown>> {
                 inline: true,
             }, {
                 name: `Status`,
-                value: order.orderStatus,
+                value: mapStatus(order.orderStatus),
                 inline: true,
             }]
         })
@@ -58,5 +58,16 @@ export async function listOrders(data: any): Promise<Record<string, unknown>> {
             // Make the response visible to only the user running the command
             flags: 64,
         }
+    }
+}
+
+function mapStatus(input: 'CONFIRMED' | 'CLAIMED' | 'DELIVERED'): string {
+    switch (input) {
+        case 'CONFIRMED':
+            return 'Pending';
+        case 'CLAIMED':
+            return 'In Progress';
+        case "DELIVERED":
+            return 'Completed';
     }
 }

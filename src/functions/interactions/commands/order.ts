@@ -1,8 +1,8 @@
 import {ddb} from "@libs/ddb-client";
-import {GetCommand} from "@aws-sdk/lib-dynamodb";
+import {GetCommand, QueryCommand} from "@aws-sdk/lib-dynamodb";
 import {InteractionResponseType} from "discord-interactions";
 
-const { USERS_TABLE } = process.env;
+const { USERS_TABLE, ORDERS_TABLE } = process.env;
 
 export async function order(data: any): Promise<Record<string, unknown>> {
 
@@ -18,6 +18,26 @@ export async function order(data: any): Promise<Record<string, unknown>> {
             type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
             data: {
                 content: `To place an order you must first deposit ISK to \`Highsec Deliveries\`. Please link EVE characters with \`/signin\` and then transfer ISK from them to \`Highsec Deliveries\` to top up your balance. It may take up to 60 minutes for the balance to update. You can use \`/balance\` to check your current balance.`,
+                // Make the response visible to only the user running the command
+                flags: 64,
+            }
+        };
+    }
+
+    const openOrders = (await ddb.send(new QueryCommand({
+        TableName: ORDERS_TABLE,
+        IndexName: 'orderOwner',
+        KeyConditionExpression: 'contains(:s, order.orderStatus)',
+        ExpressionAttributeValues: {
+            ':o': discordId,
+            ':s': ['CONFIRMED', 'CLAIMED', 'DELIVERED']
+        }
+    }))).Items;
+    if (openOrders?.length >= 10) {
+        return {
+            type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+            data: {
+                content: `You have 10 or more orders. Please clear some first before continuing.`,
                 // Make the response visible to only the user running the command
                 flags: 64,
             }

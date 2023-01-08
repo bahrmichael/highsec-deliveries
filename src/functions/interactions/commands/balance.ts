@@ -23,15 +23,8 @@ export async function balance(data: any): Promise<Record<string, unknown>> {
         };
     }
 
-    let summary;
-    if (balanceRecord.reserved > 0) {
-        const available = new Intl.NumberFormat('en-US').format(balanceRecord.balance);
-        const reserved = new Intl.NumberFormat('en-US').format(balanceRecord.reserved);
-        summary = `You have ${available} ISK available. ${reserved} is reserved by pending orders or payouts. Use the command \`/list-orders\` to show your orders.`
-    } else {
-        const available = new Intl.NumberFormat('en-US').format(balanceRecord.balance);
-        summary = `You have ${available} ISK available.`
-    }
+    const available = new Intl.NumberFormat('en-US').format(balanceRecord.balance);
+    const summary = `You have ${available} ISK available.`
 
     return {
         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
