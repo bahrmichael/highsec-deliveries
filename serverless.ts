@@ -98,7 +98,7 @@ const serverlessConfiguration: AWS = {
             KeyType: 'HASH'
           }, {
             AttributeName: 'contractId',
-            KeyType: 'HASH'
+            KeyType: 'RANGE'
           }],
           AttributeDefinitions: [{
             AttributeName: 'eveCharacterId',
