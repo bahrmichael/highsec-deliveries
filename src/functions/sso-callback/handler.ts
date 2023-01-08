@@ -47,7 +47,7 @@ const hello = async (event: APIGatewayProxyEvent) => {
         }
     }
 
-    const {discordId, interactionToken} = loginState;
+    const {discordId, interactionToken, esiScope} = loginState;
 
     const {data} = await axios.get(`${AUTH_API}?code=${event.queryStringParameters.code}&appId=highsec-deliveries`);
 
@@ -59,7 +59,7 @@ const hello = async (event: APIGatewayProxyEvent) => {
             characterName: data.name,
             characterId: data.characterId,
         }
-    }))
+    }));
     await ddb.send(new PutCommand({
         TableName: USERS_TABLE,
         Item: {
@@ -68,8 +68,9 @@ const hello = async (event: APIGatewayProxyEvent) => {
             characterName: data.name,
             characterId: data.characterId,
             discordId,
+            esiScope,
         }
-    }))
+    }));
 
     const discordClient = await getClient();
     await discordClient.put(`/guilds/${GUILD_ID}/members/${discordId}/roles/${VERIFIED_ROLE_ID}`)

@@ -3,6 +3,10 @@ export const commands = [{
     type: 1,
     description: 'Sign in with EVE Online',
 }, {
+    name: 'signin-agent',
+    type: 1,
+    description: 'Grant additional ESI access for delivery agents.',
+}, {
     name: 'order',
     type: 1,
     description: 'Place an order',

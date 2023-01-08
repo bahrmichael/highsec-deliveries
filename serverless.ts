@@ -89,6 +89,29 @@ const serverlessConfiguration: AWS = {
           }],
         }
       },
+      ContractsTable: {
+        Type: 'AWS::DynamoDB::Table',
+        Properties: {
+          BillingMode: 'PAY_PER_REQUEST',
+          KeySchema: [{
+            AttributeName: 'eveCharacterId',
+            KeyType: 'HASH'
+          }, {
+            AttributeName: 'contractId',
+            KeyType: 'HASH'
+          }],
+          AttributeDefinitions: [{
+            AttributeName: 'eveCharacterId',
+            AttributeType: 'S',
+          }, {
+            AttributeName: 'contractId',
+            AttributeType: 'S',
+          }],
+          StreamSpecification: {
+            StreamViewType: 'NEW_AND_OLD_IMAGES'
+          },
+        }
+      },
       TransactionsTable: {
         Type: 'AWS::DynamoDB::Table',
         Properties: {
@@ -117,11 +140,27 @@ const serverlessConfiguration: AWS = {
             AttributeName: 'sk',
             KeyType: 'RANGE'
           }],
+          GlobalSecondaryIndexes: [{
+            IndexName: 'esiScope',
+            KeySchema: [{
+              AttributeName: 'esiScope',
+              KeyType: 'HASH'
+            }, {
+              AttributeName: 'pk',
+              KeyType: 'RANGE'
+            }],
+            Projection: {
+              ProjectionType: 'ALL'
+            }
+          }],
           AttributeDefinitions: [{
             AttributeName: 'pk',
             AttributeType: 'S',
           }, {
             AttributeName: 'sk',
+            AttributeType: 'S',
+          }, {
+            AttributeName: 'esiScope',
             AttributeType: 'S',
           }],
         }

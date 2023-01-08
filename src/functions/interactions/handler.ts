@@ -10,6 +10,7 @@ import {confirmOrder} from "./commands/confirm-order";
 import {takeOrder} from "./commands/take-order";
 import {orderModal} from "./commands/order-modal";
 import {listDeliveries} from "./commands/list-deliveries";
+import {signinAgent} from "./commands/signin-agent";
 
 const {PUBLIC_KEY} = process.env;
 
@@ -58,6 +59,9 @@ const handler = async (event: any) => {
         switch (data.data.name) {
             case 'signin':
                 res = await signin(data);
+                break;
+            case 'signin-agent':
+                res = await signinAgent(data);
                 break;
             case 'order':
                 res = await order(data);
