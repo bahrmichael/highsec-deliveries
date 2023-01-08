@@ -4,7 +4,7 @@ import {InteractionResponseType} from "discord-interactions";
 import axios from "axios";
 import {ulid} from "ulid";
 
-const {ORDERS_TABLE, USERS_TABLE, AGENT_WEBHOOK_ID, AGENT_WEBHOOK_TOKEN, TRANSACTIONS_TABLE} = process.env;
+const {ORDERS_TABLE, USERS_TABLE, AGENT_WEBHOOK_ID, AGENT_WEBHOOK_TOKEN, TRANSACTIONS_TABLE, APPLICATION_ID} = process.env;
 
 async function getDiscordWebhookAgentsClient() {
     return axios.create({
@@ -100,7 +100,7 @@ export async function confirmOrder(data: any): Promise<Record<string, unknown>> 
         ]
     });
 
-    const updateResponse = await discord.patch(`/messages/${data.message.id}`, {
+    const updateResponse = await axios.patch(`/messages/${data.message.id}`, {
         components: [
             {
                 type: 1,
@@ -120,7 +120,12 @@ export async function confirmOrder(data: any): Promise<Record<string, unknown>> 
                 ]
             }
         ]
-    });
+    },{
+        baseURL: `https://discord.com/api/v10/webhooks/${APPLICATION_ID}/${data.token}`,
+        headers: {
+            'Accept-Encoding': 'gzip,deflate,compress'
+        }
+    })
     console.log(updateResponse.data);
 
     // todo: remove the previous message, or disable its buttons
