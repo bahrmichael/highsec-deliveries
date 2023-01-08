@@ -7,7 +7,6 @@ import {balance} from "./commands/balance";
 import {listCharacters} from "./commands/list-characters";
 import {listOrders} from "./commands/list-orders";
 import {confirmOrder} from "./commands/confirm-order";
-import {cancelOrder} from "./commands/cancel-order";
 import {takeOrder} from "./commands/take-order";
 import {orderModal} from "./commands/order-modal";
 import {listDeliveries} from "./commands/list-deliveries";
@@ -92,8 +91,6 @@ const handler = async (event: any) => {
 
         if (customId.startsWith('confirm_order')) {
             return formatJSONResponse(await confirmOrder(data));
-        } else if (customId.startsWith('cancel_order')) {
-            return formatJSONResponse(await cancelOrder(data));
         } else if (customId.startsWith('take_order')) {
             return formatJSONResponse(await takeOrder(data));
         } else {

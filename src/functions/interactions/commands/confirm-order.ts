@@ -4,7 +4,7 @@ import {InteractionResponseType} from "discord-interactions";
 import axios from "axios";
 import {ulid} from "ulid";
 
-const {ORDERS_TABLE, USERS_TABLE, AGENT_WEBHOOK_ID, AGENT_WEBHOOK_TOKEN, TRANSACTIONS_TABLE, APPLICATION_ID} = process.env;
+const {ORDERS_TABLE, USERS_TABLE, AGENT_WEBHOOK_ID, AGENT_WEBHOOK_TOKEN, TRANSACTIONS_TABLE} = process.env;
 
 async function getDiscordWebhookAgentsClient() {
     return axios.create({
@@ -30,6 +30,16 @@ export async function confirmOrder(data: any): Promise<Record<string, unknown>> 
             type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
             data: {
                 content: `We couldn't find the order anymore. Please reach out to an Admin with the orderId ${orderId}.`,
+                // Make the response visible to only the user running the command
+                flags: 64,
+            }
+        }
+    }
+    if (order.orderStatus !== 'PENDING') {
+        return {
+            type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+            data: {
+                content: `You've already confirmed this order.`,
                 // Make the response visible to only the user running the command
                 flags: 64,
             }
@@ -100,42 +110,6 @@ export async function confirmOrder(data: any): Promise<Record<string, unknown>> 
         ]
     });
 
-    const orderSummaryMessageResponse = await axios.get(`/messages/@original`,{
-        baseURL: `https://discord.com/api/v10/webhooks/${APPLICATION_ID}/${data.token}`,
-        headers: {
-            'Accept-Encoding': 'gzip,deflate,compress'
-        }
-    })
-    console.log(orderSummaryMessageResponse.data);
-    const updateResponse = await axios.patch(`/messages/@original`, {
-        components: [
-            {
-                type: 1,
-                components: [
-                    {
-                        type: 2,
-                        label: "Confirm",
-                        style: 3,
-                        disabled: true,
-                    },
-                    {
-                        type: 2,
-                        label: "Cancel",
-                        style: 4,
-                        disabled: true,
-                    },
-                ]
-            }
-        ]
-    },{
-        baseURL: `https://discord.com/api/v10/webhooks/${APPLICATION_ID}/${data.token}`,
-        headers: {
-            'Accept-Encoding': 'gzip,deflate,compress'
-        }
-    })
-    console.log(updateResponse.data);
-
-    // todo: remove the previous message, or disable its buttons
     return {
         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
         data: {

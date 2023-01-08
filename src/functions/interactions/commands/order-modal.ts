@@ -146,12 +146,6 @@ export async function orderModal(data: any): Promise<Record<string, unknown>> {
                                 style: 3,
                                 custom_id: `confirm_order#${orderId}`
                             },
-                            {
-                                type: 2,
-                                label: "Cancel",
-                                style: 4,
-                                custom_id: `cancel_order#${orderId}`
-                            },
                         ]
                     }
                 ]

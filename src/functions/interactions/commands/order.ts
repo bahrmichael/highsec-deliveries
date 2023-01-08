@@ -24,7 +24,7 @@ export async function order(data: any): Promise<Record<string, unknown>> {
         };
     }
 
-    return{
+    return {
         type: InteractionResponseType.APPLICATION_MODAL,
         data: {
             title: "Place an Order",
