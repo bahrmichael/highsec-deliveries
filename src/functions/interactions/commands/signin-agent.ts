@@ -21,7 +21,7 @@ export async function signinAgent(data: any): Promise<Record<string, unknown>> {
             discordId,
             // one hour time to live
             timetolive: Math.ceil(new Date().getTime() / 1_000 + 60 * 60),
-            esiScope: 'hauler'
+            esiScope: 'agent'
         }
     }))
 

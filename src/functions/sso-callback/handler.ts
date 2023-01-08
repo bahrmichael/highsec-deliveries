@@ -7,7 +7,7 @@ import {GetSecretValueCommand, SecretsManagerClient} from "@aws-sdk/client-secre
 
 const ssm = new SecretsManagerClient({});
 
-const {LOGIN_STATE_TABLE, USERS_TABLE, GUILD_ID, VERIFIED_ROLE_ID, APPLICATION_ID} = process.env;
+const {LOGIN_STATE_TABLE, USERS_TABLE, GUILD_ID, VERIFIED_ROLE_ID, APPLICATION_ID, AGENT_ROLE_ID} = process.env;
 
 const AUTH_API = `https://uc4v3lk6rh.execute-api.us-east-1.amazonaws.com/dev/auth`;
 
@@ -73,14 +73,23 @@ const hello = async (event: APIGatewayProxyEvent) => {
     }));
 
     const discordClient = await getClient();
-    await discordClient.put(`/guilds/${GUILD_ID}/members/${discordId}/roles/${VERIFIED_ROLE_ID}`)
-
     await discordClient.delete(`/webhooks/${APPLICATION_ID}/${interactionToken}/messages/@original`)
-    await discordClient.post(`/webhooks/${APPLICATION_ID}/${interactionToken}`, {
-        content: `You have successfully verified the character ${data.name} and can now place orders with the command \`/order\`.`,
-        // Make the response visible to only the user running the command
-        flags: 64,
-    })
+
+    if (esiScope === 'agent') {
+        await discordClient.put(`/guilds/${GUILD_ID}/members/${discordId}/roles/${AGENT_ROLE_ID}`)
+        await discordClient.post(`/webhooks/${APPLICATION_ID}/${interactionToken}`, {
+            content: `You have successfully granted additional ESI access for the character ${data.name}.`,
+            // Make the response visible to only the user running the command
+            flags: 64,
+        })
+    } else {
+        await discordClient.put(`/guilds/${GUILD_ID}/members/${discordId}/roles/${VERIFIED_ROLE_ID}`)
+        await discordClient.post(`/webhooks/${APPLICATION_ID}/${interactionToken}`, {
+            content: `You have successfully verified the character ${data.name} and can now place orders with the command \`/order\`.`,
+            // Make the response visible to only the user running the command
+            flags: 64,
+        })
+    }
 
     return {
         statusCode: 200,

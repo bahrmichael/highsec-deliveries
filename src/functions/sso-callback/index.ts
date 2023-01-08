@@ -8,6 +8,7 @@ export default {
     LOGIN_STATE_TABLE: {Ref: 'LoginStateTable'},
     USERS_TABLE: {Ref: 'UsersTable'},
     VERIFIED_ROLE_ID: '1057613825874079785',
+    AGENT_ROLE_ID: '1061692912745857114',
     GUILD_ID: '1057335108207661066'
   },
   events: [

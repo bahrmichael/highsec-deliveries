@@ -40,26 +40,26 @@ export const main = async () => {
         return;
     }
 
-    const haulers = (await ddb.send(new QueryCommand({
+    const agents = (await ddb.send(new QueryCommand({
         TableName: USERS_TABLE,
         IndexName: 'esiScope',
         KeyConditionExpression: 'esiScope = :s',
         ExpressionAttributeValues: {
-            ':s': `hauler`,
+            ':s': `agent`,
         }
     }))).Items;
 
     const identityClient = await getIdentityClient();
-    for (const hauler of haulers) {
-        const {accessToken} = (await identityClient.get(`app/highsec-deliveries/character/${hauler.characterId}/token`)).data;
+    for (const agent of agents) {
+        const {accessToken} = (await identityClient.get(`app/highsec-deliveries/character/${agent.characterId}/token`)).data;
         const esiClient = getEsiClient(accessToken);
-        const contracts = (await esiClient.get(`/characters/${hauler.character_id}/contracts/`)).data;
+        const contracts = (await esiClient.get(`/characters/${agent.character_id}/contracts/`)).data;
 
         const latestContracts = (await ddb.send(new QueryCommand({
             TableName: CONTRACTS_TABLE,
             KeyConditionExpression: 'eveCharacterId = :i',
             ExpressionAttributeValues: {
-                ':i': `${hauler.characterId}`,
+                ':i': `${agent.characterId}`,
             },
             ScanIndexForward: false,
             Limit: 1,
@@ -72,7 +72,7 @@ export const main = async () => {
             await ddb.send(new PutCommand({
                 TableName: CONTRACTS_TABLE,
                 Item: {
-                    eveCharacterId: `${hauler.characterId}`,
+                    eveCharacterId: `${agent.characterId}`,
                     contractId: `${newContract.contract_id}`,
                     ...newContract,
                 }
