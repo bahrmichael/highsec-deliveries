@@ -28,7 +28,7 @@ export async function order(data: any): Promise<Record<string, unknown>> {
         TableName: ORDERS_TABLE,
         IndexName: 'orderOwner',
         KeyConditionExpression: 'orderOwner = :o',
-        FilterExpression: 'contains(:s, order.orderStatus)',
+        FilterExpression: 'contains(:s, orderStatus)',
         ExpressionAttributeValues: {
             ':o': discordId,
             ':s': ['CONFIRMED', 'CLAIMED', 'DELIVERED']
