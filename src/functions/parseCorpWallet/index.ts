@@ -24,4 +24,5 @@ export default {
   tags: {
     function: 'parse-corp-wallet'
   },
+  timeout: 60,
 };

@@ -29,4 +29,5 @@ export default {
   tags: {
     function: 'parse-contracts'
   },
+  timeout: 60,
 };
