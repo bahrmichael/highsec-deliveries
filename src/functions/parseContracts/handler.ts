@@ -53,7 +53,7 @@ export const main = async () => {
     for (const agent of agents) {
         const {accessToken} = (await identityClient.get(`app/highsec-deliveries/character/${agent.characterId}/token`)).data;
         const esiClient = getEsiClient(accessToken);
-        const contracts = (await esiClient.get(`/characters/${agent.character_id}/contracts/`)).data;
+        const contracts = (await esiClient.get(`/characters/${agent.characterId}/contracts/`)).data;
 
         const latestContracts = (await ddb.send(new QueryCommand({
             TableName: CONTRACTS_TABLE,
