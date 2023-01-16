@@ -53,7 +53,7 @@ export const main = async () => {
     for (const agent of agents) {
         const {accessToken} = (await identityClient.get(`app/highsec-deliveries/character/${agent.characterId}/token`)).data;
         const esiClient = getEsiClient(accessToken);
-        const contracts = (await esiClient.get(`/characters/${agent.characterId}/contracts/`)).data;
+        const contracts = (await esiClient.get(`/v1/characters/${agent.characterId}/contracts/`)).data;
 
         const latestContracts = (await ddb.send(new QueryCommand({
             TableName: CONTRACTS_TABLE,
@@ -69,12 +69,15 @@ export const main = async () => {
         const newContracts = contracts.filter((c) => c.contract_id > latestId);
 
         for (const newContract of newContracts) {
+            const items = (await esiClient.get(`/v1/characters/${agent.characterId}/contracts/${newContract.contract_id}/items`)).data;
+
             await ddb.send(new PutCommand({
                 TableName: CONTRACTS_TABLE,
                 Item: {
                     eveCharacterId: `${agent.characterId}`,
                     contractId: `${newContract.contract_id}`,
                     ...newContract,
+                    items,
                 }
             }));
         }
