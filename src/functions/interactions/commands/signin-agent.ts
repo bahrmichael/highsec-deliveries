@@ -26,7 +26,7 @@ export async function signinAgent(data: any): Promise<Record<string, unknown>> {
     }))
 
     const callbackUrl = `https://${API_ID}.execute-api.us-east-1.amazonaws.com/${VERSION}/sso-callback`;
-    const signinUrl = `https://login.eveonline.com/v2/oauth/authorize/?response_type=code&redirect_uri=${encodeURIComponent(callbackUrl)}&client_id=${ESI_CLIENT_ID}&state=${state}&scope=esi-wallet.read_corporation_wallets.v1`;
+    const signinUrl = `https://login.eveonline.com/v2/oauth/authorize/?response_type=code&redirect_uri=${encodeURIComponent(callbackUrl)}&client_id=${ESI_CLIENT_ID}&state=${state}&scope=esi-contracts.read_character_contracts.v1`;
 
     return {
         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
