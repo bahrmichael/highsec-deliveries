@@ -69,6 +69,13 @@ export const main = async () => {
         const newContracts = contracts.filter((c) => c.contract_id > latestId);
 
         for (const newContract of newContracts) {
+            if (newContract.issuer_corporation_id === 98649014) {
+                continue;
+            }
+            if (newContract.type !== 'item_exchange') {
+                continue;
+            }
+
             const items = (await esiClient.get(`/v1/characters/${agent.characterId}/contracts/${newContract.contract_id}/items`)).data;
 
             await ddb.send(new PutCommand({
