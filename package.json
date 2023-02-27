@@ -26,7 +26,7 @@
     "esbuild": "^0.14.11",
     "json-schema-to-ts": "^1.5.0",
     "serverless": "^3.0.0",
-    "serverless-domain-manager": "^6.2.1",
+    "serverless-domain-manager": "^6.3.0",
     "serverless-esbuild": "^1.23.3",
     "serverless-iam-roles-per-function": "^3.2.0",
     "serverless-plugin-log-retention": "^2.0.0",
